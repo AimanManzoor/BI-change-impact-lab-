@@ -1,8 +1,17 @@
 # BI Change Impact Lab
 
+[![Launch interactive app](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)
+
+**[Launch interactive app →](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** — explore the bundled SQL dependencies in your browser.
+
 A learning project using Graphify to trace SQL dependencies and support evidence-based change review. Planned AI explanations will sit behind a Python-controlled harness.
 
 ## Try the interactive app
+
+Open **[the hosted Streamlit app](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** to explore the example without a local installation.
+Choose an object, inspect its downstream views and source evidence, and download the impact report.
+
+### Run a local copy instead
 
 Requires Git, Python 3.12, and an internet connection to install dependencies.
 The bundled synthetic example needs no dataset download, API key, or database server.
@@ -50,9 +59,12 @@ not confirmed breaking changes. The app currently supports only this bundled exa
 
 Share this repository URL: https://github.com/AimanManzoor/BI-change-impact-lab-
 
-Visitors can follow the instructions above to run the app themselves. GitHub displays
-the source and README; it does not execute this Python application. A public browser
-demo requires separate Streamlit-compatible hosting and has not been deployed.
+Share the app URL for browser access: https://5h6ugidjyitkpvyqj4mjss.streamlit.app/
+
+The README launch button opens the Streamlit deployment. GitHub hosts the source;
+Streamlit runs the application. Visitors can also follow the local setup instructions.
+The deployment URL was supplied by the project owner; public access and browser
+interactions should be checked in a signed-out or private browser window.
 
 ## Milestone 1: verified SQL dependency baseline
 
@@ -69,7 +81,7 @@ After completing the installation above, run from the repository folder:
 .venv/bin/python -m src.impact --object orders
 ```
 
-On Windows use `.venv\\Scripts\\python.exe` in place of `.venv/bin/python`.
+On Windows use `.venv\Scripts\python.exe` in place of `.venv/bin/python`.
 Object names are exact and case-sensitive. An unknown name is an error rather than a report of no impact.
 
 ## Milestone 2: local Streamlit explorer
@@ -99,7 +111,7 @@ two direct views. Try `regional_sales`: no downstream consumer within this fixtu
 The app stops on fixture verification failures instead of showing impact numbers.
 The same `build_report()` function supplies both the CLI and app results.
 
-The interface is a local synthetic demo. No SQL uploads, database connection,
+The interface is a synthetic demo available locally and through the linked Streamlit deployment. No SQL uploads, database connection,
 provider calls, model costs, or automatic business decisions are involved.
 Automated UI checks use Streamlit AppTest; browser rendering and public hosting
 are separate checks and have not been validated in this milestone.
@@ -124,7 +136,7 @@ Twelve tests passed locally on Python 3.12 (seven analysis tests and five Stream
 - Potential impact indicates a dependency path, not a demonstrated breaking change.
 - Source locations and confidence labels do not prove business correctness.
 - No column-level lineage, dynamic SQL, DAX, TMDL, Power BI report mapping, or live database integration is implemented.
-- A local Streamlit interface is implemented. No AI explanation or public hosted deployment is implemented yet.
+- A Streamlit interface is implemented, with the owner-provided hosted app linked above. No AI explanation is implemented yet.
 - The pinned published Graphify package is used; this application does not require modifying the Graphify fork. Indirect dependencies are not fully locked.
 
 ## Roadmap
