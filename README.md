@@ -24,6 +24,38 @@ If already cloned, enter that checkout and use `git pull --ff-only` before runni
 
 Try `--object customers` or `--object regional_sales` as well. Object names are exact and case-sensitive. An unknown name is an error; it is never presented as proof of no impact.
 
+## Milestone 2: local Streamlit explorer
+
+After installing requirements, run from the repository folder:
+
+```bash
+.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1
+```
+
+Open the local URL printed by Streamlit (normally http://127.0.0.1:8501).
+Keep that terminal running; press Control+C when finished. GitHub stores the
+application source and does not run this local Python server.
+
+- Select the object that might change; results update immediately.
+- Inspect counts of direct and indirect downstream views.
+- The dependency map shows all five example objects. Arrows point from a
+  dependency to its consumer; blue marks the selected object, orange its
+  downstream views, and gray the remaining objects.
+- Choose a potentially affected view to inspect one shortest evidence path.
+  Graphify's source file, line, and confidence labels are retained.
+- Expand the SQL source to compare evidence locations with actual statements.
+- Download the current selection's JSON impact report for review.
+
+Try `orders`: two downstream views, one direct and one indirect. Try `customers`:
+two direct views. Try `regional_sales`: no downstream consumer within this fixture.
+The app stops on fixture verification failures instead of showing impact numbers.
+The same `build_report()` function supplies both the CLI and app results.
+
+The interface is a local synthetic demo. No SQL uploads, database connection,
+provider calls, model costs, or automatic business decisions are involved.
+Automated UI checks use Streamlit AppTest; browser rendering and public hosting
+are separate checks and have not been validated in this milestone.
+
 ## How it works
 
 1. `examples/retail.sql` supplies the synthetic source. It contains no organization data.
@@ -36,7 +68,7 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Seven tests passed locally on Python 3.12. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, and executable SQL. This is a small fixture validation, not a general SQL parser benchmark. A GitHub Actions workflow runs the same suite; its hosted outcome must be checked in Actions.
+Twelve tests passed locally on Python 3.12 (seven analysis tests and five Streamlit interaction/error tests). Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. A GitHub Actions workflow runs the same suite; its hosted outcome must be checked in Actions.
 
 ## Scope and limitations
 
@@ -44,14 +76,14 @@ Seven tests passed locally on Python 3.12. Checks cover the four expected depend
 - Potential impact indicates a dependency path, not a demonstrated breaking change.
 - Source locations and confidence labels do not prove business correctness.
 - No column-level lineage, dynamic SQL, DAX, TMDL, Power BI report mapping, or live database integration is implemented.
-- No interactive interface or AI explanation is implemented yet.
+- A local Streamlit interface is implemented. No AI explanation or public hosted deployment is implemented yet.
 - The pinned published Graphify package is used; this application does not require modifying the Graphify fork. Indirect dependencies are not fully locked.
 
 ## Roadmap
 
 - [x] Synthetic SQL fixture, Graphify extraction, independent expected dependencies and source-backed traversal.
 - [ ] Additional SQL fixtures and measured coverage of supported/unsupported cases.
-- [ ] Streamlit interface for selecting an object and inspecting evidence paths.
+- [x] Streamlit interface for selecting an object and inspecting evidence paths.
 - [ ] Optional AI explanation harness: allowlisted inputs, bounded calls, source-reference checks, abstention when evidence is missing, and evaluation against held-out examples.
 
 ## Attribution

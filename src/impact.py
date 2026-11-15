@@ -71,18 +71,22 @@ def downstream(result, object_name):
     return sorted(hits, key=lambda h: (h['depth'], h['object']))
 
 
+def build_report(result, object_name):
+    _, edges = verify_fixture(result)
+    return {'status': 'fixture_verified', 'changed_object': object_name,
+            'verified_dependencies': len(edges),
+            'potentially_affected': downstream(result, object_name),
+            'scope': 'examples/retail.sql only; one shortest evidence path per object',
+            'human_review_required': True, 'model_calls': 0}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--object', default='orders')
     args = parser.parse_args()
     try:
         result = extract_fixture()
-        _, edges = verify_fixture(result)
-        report = {'status': 'fixture_verified', 'changed_object': args.object,
-                  'verified_dependencies': len(edges),
-                  'potentially_affected': downstream(result, args.object),
-                  'scope': 'examples/retail.sql only; one shortest evidence path per object',
-                  'human_review_required': True, 'model_calls': 0}
+        report = build_report(result, args.object)
     except ValueError as exc:
         parser.exit(1, f'Stopped: {exc}\n')
     print(json.dumps(report, indent=2))
