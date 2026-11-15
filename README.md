@@ -2,27 +2,75 @@
 
 A learning project using Graphify to trace SQL dependencies and support evidence-based change review. Planned AI explanations will sit behind a Python-controlled harness.
 
+## Try the interactive app
+
+Requires Git, Python 3.12, and an internet connection to install dependencies.
+The bundled synthetic example needs no dataset download, API key, or database server.
+
+**macOS / Linux** — paste this entire block into Terminal:
+
+```bash
+git clone https://github.com/AimanManzoor/BI-change-impact-lab-.git &&
+cd BI-change-impact-lab- &&
+python3 -m venv .venv &&
+.venv/bin/python -m pip install -r requirements.txt &&
+.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1
+```
+
+**Windows PowerShell** — run each line in order; stop if a command reports an error:
+
+```powershell
+git clone https://github.com/AimanManzoor/BI-change-impact-lab-.git
+cd BI-change-impact-lab-
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1
+```
+
+Open the URL printed in Terminal, normally [http://127.0.0.1:8501](http://127.0.0.1:8501).
+Keep Terminal running while using the app. Press **Control+C** to stop it.
+This address works on the computer running the app; it is not a public demo link.
+
+Already cloned? Enter your existing checkout, run `git pull --ff-only`, reinstall
+requirements, and launch Streamlit with the command above.
+
+### Your first exploration
+
+| Select | What you should see |
+|---|---|
+| `orders` | `order_summary` directly affected; `regional_sales` indirectly affected |
+| `customers` | `customer_directory` and `regional_sales` directly affected |
+| `regional_sales` | No downstream consumers in the bundled fixture |
+
+Use **Inspect the evidence path** to check source lines, expand **Read the SQL source**,
+and download a JSON report for your selection. These are potential dependency impacts,
+not confirmed breaking changes. The app currently supports only this bundled example.
+
+### Sharing
+
+Share this repository URL: https://github.com/AimanManzoor/BI-change-impact-lab-
+
+Visitors can follow the instructions above to run the app themselves. GitHub displays
+the source and README; it does not execute this Python application. A public browser
+demo requires separate Streamlit-compatible hosting and has not been deployed.
+
 ## Milestone 1: verified SQL dependency baseline
 
 Implemented: local Graphify AST extraction of a synthetic retail SQL fixture, comparison against independently specified dependency pairs, downstream traversal, and source evidence for each path. No API key, model call, assistant installation, or running database is required by the CLI.
 
 The fixture contains two tables and three views. Graphify extracts four `reads_from` relationships. Changing `orders` potentially affects `order_summary` directly and `regional_sales` transitively. `customer_directory` is not downstream of `orders`.
 
-## Run locally (Python 3.12 recommended)
+## Run tests and the terminal report
+
+After completing the installation above, run from the repository folder:
 
 ```bash
-git clone https://github.com/AimanManzoor/BI-change-impact-lab-.git
-cd BI-change-impact-lab-
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m unittest discover -s tests -t . -v
 .venv/bin/python -m src.impact --object orders
 ```
 
-On Windows use `.venv\Scripts\python.exe` in place of `.venv/bin/python`.
-If already cloned, enter that checkout and use `git pull --ff-only` before running the setup commands.
-
-Try `--object customers` or `--object regional_sales` as well. Object names are exact and case-sensitive. An unknown name is an error; it is never presented as proof of no impact.
+On Windows use `.venv\\Scripts\\python.exe` in place of `.venv/bin/python`.
+Object names are exact and case-sensitive. An unknown name is an error rather than a report of no impact.
 
 ## Milestone 2: local Streamlit explorer
 
@@ -68,7 +116,7 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Twelve tests passed locally on Python 3.12 (seven analysis tests and five Streamlit interaction/error tests). Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. A GitHub Actions workflow runs the same suite; its hosted outcome must be checked in Actions.
+Twelve tests passed locally on Python 3.12 (seven analysis tests and five Streamlit interaction/error tests). Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
 
 ## Scope and limitations
 
