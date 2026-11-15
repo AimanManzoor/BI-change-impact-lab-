@@ -1,0 +1,6 @@
+[
+  ["order_summary", "orders"],
+  ["regional_sales", "order_summary"],
+  ["regional_sales", "customers"],
+  ["customer_directory", "customers"]
+]
