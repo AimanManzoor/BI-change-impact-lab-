@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 from streamlit.testing.v1 import AppTest
@@ -48,6 +49,25 @@ class AppTests(unittest.TestCase):
         self.assertFalse(app.exception)
         self.assertTrue(app.error)
         self.assertFalse(app.selectbox)
+
+    def test_receipt_tracks_current_object(self):
+        app = self.launch()
+        receipt = json.loads(app.json[0].value)
+        self.assertEqual(receipt['requested_object'], 'orders')
+        self.assertEqual(receipt['tool_calls'], 1)
+        app.selectbox(key='changed_object').select('regional_sales').run()
+        receipt = json.loads(app.json[0].value)
+        self.assertEqual(receipt['requested_object'], 'regional_sales')
+        self.assertEqual(receipt['status'], 'no_consumers_in_fixture')
+        self.assertEqual(receipt['report']['potentially_affected'], [])
+
+    def test_harness_failure_does_not_display_unverified_results(self):
+        with patch('src.harness.run_harness', return_value={'status': 'verification_failed'}):
+            app = self.launch()
+        self.assertFalse(app.exception)
+        self.assertIn('verification_failed', app.error[0].value)
+        self.assertFalse(app.metric)
+        self.assertFalse(app.dataframe)
 
 
 if __name__ == '__main__':

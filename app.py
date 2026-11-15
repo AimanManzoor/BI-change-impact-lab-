@@ -1,7 +1,8 @@
 """Local interactive explorer for the verified synthetic SQL fixture."""
 import json
 import streamlit as st
-from src.impact import ROOT, extract_fixture, verify_fixture, build_report
+from src.impact import ROOT, extract_fixture, verify_fixture
+from src.harness import run_harness
 
 
 st.set_page_config(page_title='BI Change Impact Lab', layout='wide')
@@ -21,11 +22,12 @@ object_ids = {edge[key] for edge in edges for key in ('source', 'target')}
 names = sorted({nodes[node_id]['label'] for node_id in object_ids})
 selected = st.selectbox('Which SQL object might change?', names,
                         index=names.index('orders'), key='changed_object')
-try:
-    report = build_report(result, selected)
-except ValueError as exc:
-    st.error(f'Could not verify the impact report. {exc}')
+proposal = json.dumps({'tool': 'trace_downstream', 'object': selected})
+receipt = run_harness(selected, proposal, result)
+if receipt['status'] not in {'completed', 'no_consumers_in_fixture'}:
+    st.error(f"Impact checks stopped the run: {receipt['status']}. Results are unavailable.")
     st.stop()
+report = receipt['report']
 
 hits = report['potentially_affected']
 direct = sum(hit['depth'] == 1 for hit in hits)
@@ -69,4 +71,10 @@ with st.expander('Read the SQL source', expanded=False):
 
 st.download_button('Download this impact report', json.dumps(report, indent=2),
                    file_name=f'impact_{selected}.json', mime='application/json')
+with st.expander('Inspect the execution receipt'):
+    st.caption('The dropdown creates a deterministic proposal. Python checks permissions, limits the impact tool to one attempt, and verifies the returned evidence. No model is connected yet.')
+    st.code(proposal, language='json')
+    st.json(receipt)
+    st.download_button('Download execution receipt', json.dumps(receipt, indent=2),
+                       file_name=f'receipt_{selected}.json', mime='application/json')
 st.caption('Four dependency pairs checked against a manually specified reference. No column-level lineage, DAX, or Power BI report mapping yet.')

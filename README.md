@@ -109,12 +109,35 @@ application source and does not run this local Python server.
 Try `orders`: two downstream views, one direct and one indirect. Try `customers`:
 two direct views. Try `regional_sales`: no downstream consumer within this fixture.
 The app stops on fixture verification failures instead of showing impact numbers.
-The same `build_report()` function supplies both the CLI and app results.
+The same `build_report()` function supplies the CLI and the dashboard's controlled impact tool.
 
 The interface is a synthetic demo available locally and through the linked Streamlit deployment. No SQL uploads, database connection,
 provider calls, model costs, or automatic business decisions are involved.
 Automated UI checks use Streamlit AppTest; browser rendering and public hosting
 are separate checks and have not been validated in this milestone.
+
+## Milestone 3: AI harness foundation
+
+The dashboard now passes a structured proposal through a Python-controlled harness.
+It accepts only `trace_downstream` for the selected object, permits one impact-tool
+attempt without retries, and checks result scope, expected consumers/depths, and
+source evidence before displaying results. Failed runs expose no impact report.
+
+Expand **Inspect the execution receipt** to see the proposed action, validation
+stages, outcome, call count, and source hash, or download the receipt.
+
+Run the harness locally:
+
+```bash
+.venv/bin/python -m src.harness --object orders
+```
+
+This milestone uses a deterministic proposal, with **zero model calls**. It adds
+the control boundary needed for later model integration; it does not implement
+an AI assistant or validate natural-language understanding.
+
+Read [the harness technical guide](docs/harness.md) for permitted inputs, statuses,
+test coverage, and limitations.
 
 ## How it works
 
@@ -128,7 +151,7 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Twelve tests passed locally on Python 3.12 (seven analysis tests and five Streamlit interaction/error tests). Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
+Twenty-five tests passed locally on Python 3.12: seven analysis tests, seven Streamlit interaction/error tests, and eleven harness tests. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
 
 ## Scope and limitations
 
@@ -144,7 +167,8 @@ Twelve tests passed locally on Python 3.12 (seven analysis tests and five Stream
 - [x] Synthetic SQL fixture, Graphify extraction, independent expected dependencies and source-backed traversal.
 - [ ] Additional SQL fixtures and measured coverage of supported/unsupported cases.
 - [x] Streamlit interface for selecting an object and inspecting evidence paths.
-- [ ] Optional AI explanation harness: allowlisted inputs, bounded calls, source-reference checks, abstention when evidence is missing, and evaluation against held-out examples.
+- [x] Deterministic harness foundation: strict plan permissions, one impact-tool attempt, fixture evidence checks, and downloadable receipts.
+- [ ] Optional model planner and explanation: explicit opt-in, bounded provider calls, natural-language intent checks, and evaluation against held-out examples.
 
 ## Attribution
 

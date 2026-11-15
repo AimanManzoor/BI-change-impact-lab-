@@ -1,0 +1,7 @@
+{
+  "orders": {"order_summary": 1, "regional_sales": 2},
+  "customers": {"customer_directory": 1, "regional_sales": 1},
+  "order_summary": {"regional_sales": 1},
+  "regional_sales": {},
+  "customer_directory": {}
+}
