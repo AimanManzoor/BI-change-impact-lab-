@@ -69,6 +69,24 @@ class AppTests(unittest.TestCase):
         self.assertFalse(app.metric)
         self.assertFalse(app.dataframe)
 
+    def test_graph_answer_citations_and_selection_invalidation(self):
+        app = self.launch()
+        app.button(key='gr_answer').click().run()
+        self.assertFalse(app.exception)
+        self.assertTrue(any('[E2]' in m.value for m in app.markdown))
+        app.selectbox(key='changed_object').select('customers').run()
+        self.assertFalse(any('[E2]' in m.value for m in app.markdown))
+
+    def test_graph_answer_question_kind_and_no_context(self):
+        app = self.launch()
+        app.radio(key='gr_kind').set_value('Indirect downstream views').run()
+        app.button(key='gr_answer').click().run()
+        self.assertFalse(app.exception)
+        self.assertTrue(any('`regional_sales` could be affected indirectly' in m.value for m in app.markdown))
+        app.selectbox(key='changed_object').select('regional_sales').run()
+        app.button(key='gr_answer').click().run()
+        self.assertTrue(any('No matching downstream consumers' in m.value for m in app.markdown))
+
 
 if __name__ == '__main__':
     unittest.main()

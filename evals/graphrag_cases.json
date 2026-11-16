@@ -1,0 +1,12 @@
+[
+  {"object":"orders","kind":"all","status":"completed","consumers":["order_summary","regional_sales"]},
+  {"object":"orders","kind":"direct","status":"completed","consumers":["order_summary"]},
+  {"object":"orders","kind":"indirect","status":"completed","consumers":["regional_sales"]},
+  {"object":"customers","kind":"all","status":"completed","consumers":["customer_directory","regional_sales"]},
+  {"object":"customers","kind":"indirect","status":"no_context","consumers":[]},
+  {"object":"order_summary","kind":"all","status":"completed","consumers":["regional_sales"]},
+  {"object":"regional_sales","kind":"all","status":"no_context","consumers":[]},
+  {"object":"customer_directory","kind":"all","status":"no_context","consumers":[]},
+  {"object":"unknown","kind":"all","status":"retrieval_error","consumers":[]},
+  {"object":"orders","kind":"root_cause","status":"retrieval_error","consumers":[]}
+]

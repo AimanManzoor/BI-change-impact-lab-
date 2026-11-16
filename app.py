@@ -3,6 +3,7 @@ import json
 import streamlit as st
 from src.impact import ROOT, extract_fixture, verify_fixture
 from src.harness import run_harness
+from src.graphrag import answer_question
 
 
 st.set_page_config(page_title='BI Change Impact Lab', layout='wide')
@@ -72,9 +73,30 @@ with st.expander('Read the SQL source', expanded=False):
 st.download_button('Download this impact report', json.dumps(report, indent=2),
                    file_name=f'impact_{selected}.json', mime='application/json')
 with st.expander('Inspect the execution receipt'):
-    st.caption('The dropdown creates a deterministic proposal. Python checks permissions, limits the impact tool to one attempt, and verifies the returned evidence. No model is connected yet.')
+    st.caption('The dropdown creates a deterministic proposal. Python checks permissions, limits the impact tool to one attempt, and verifies the returned evidence. This dashboard makes no model calls; optional structured model generation is available through the local GraphRAG CLI.')
     st.code(proposal, language='json')
     st.json(receipt)
     st.download_button('Download execution receipt', json.dumps(receipt, indent=2),
                        file_name=f'receipt_{selected}.json', mime='application/json')
 st.caption('Four dependency pairs checked against a manually specified reference. No column-level lineage, DAX, or Power BI report mapping yet.')
+
+st.subheader('Graph-grounded question preview')
+st.caption('Template mode: retrieve relevant graph paths and show checked citations. No LLM call or API key. Optional model generation is available through the local CLI.')
+question_labels = {'All downstream views': 'all', 'Direct downstream views': 'direct',
+                   'Indirect downstream views': 'indirect'}
+question_label = st.radio('Which impacts should the answer cover?', list(question_labels), key='gr_kind')
+question_kind = question_labels[question_label]
+answer_key = (selected, question_kind, receipt['source_sha256'])
+if st.button('Retrieve graph-grounded answer', key='gr_answer'):
+    st.session_state['gr_result'] = (answer_key, answer_question(selected, question_kind, result=result))
+stored = st.session_state.get('gr_result')
+if stored is not None and stored[0] == answer_key:
+    grounded = stored[1]
+    if grounded['status'] in {'completed', 'no_context'}:
+        st.markdown(grounded['answer'])
+        if grounded['context']['evidence']:
+            st.dataframe(grounded['context']['evidence'], hide_index=True, width='stretch')
+        st.download_button('Download graph-grounded answer', json.dumps(grounded, indent=2),
+                           file_name=f'graph_answer_{selected}_{question_kind}.json', mime='application/json')
+    else:
+        st.error('The graph-grounded answer could not be verified. No answer is displayed.')

@@ -4,7 +4,7 @@
 
 **[Launch interactive app →](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** — explore the bundled SQL dependencies in your browser.
 
-A learning project using Graphify to trace SQL dependencies and support evidence-based change review. Planned AI explanations will sit behind a Python-controlled harness.
+A learning project using Graphify to trace SQL dependencies, retrieve source-backed graph context, and check structured dependency claims. The dashboard offers a template preview; an optional local GraphRAG CLI adds model generation behind the same evidence boundary.
 
 ## Try the interactive app
 
@@ -132,12 +132,35 @@ Run the harness locally:
 .venv/bin/python -m src.harness --object orders
 ```
 
-This milestone uses a deterministic proposal, with **zero model calls**. It adds
-the control boundary needed for later model integration; it does not implement
-an AI assistant or validate natural-language understanding.
+This impact-harness milestone uses a deterministic proposal, with **zero model calls**.
+The later GraphRAG adapter below can optionally generate claims after retrieval;
+the impact tool remains deterministic and does not interpret natural-language intent.
 
 Read [the harness technical guide](docs/harness.md) for permitted inputs, statuses,
 test coverage, and limitations.
+
+## Milestone 4: graph retrieval and optional structured generation
+
+The dashboard now includes **Graph-grounded question preview**. Select all,
+direct, or indirect downstream impacts and click **Retrieve graph-grounded answer**.
+Relevant paths are retrieved through the impact harness, with citation IDs,
+SQL source lines, and excerpts. Indirect questions retain every intermediate hop.
+
+The hosted preview uses deterministic templates: **no model calls or API key**.
+An optional local Anthropic adapter generates structured claims from the same
+context. Python rejects unsupported consumers, depths or citation paths before
+rendering fixed explanatory sentences. No arbitrary model prose is displayed.
+
+```bash
+.venv/bin/python -m src.graphrag --object orders --kind indirect
+.venv/bin/python -m evals.evaluate_graphrag
+```
+
+See [the GraphRAG technical guide](docs/graphrag.md) for optional live setup,
+budgets, validation, and limitations. Live model requests and model-quality
+evaluation remain unverified. This applies the graph-based RAG pattern to our
+small fixture; it does not install Microsoft's GraphRAG framework, implement
+free-form question understanding, or establish improvements over vector RAG.
 
 ## How it works
 
@@ -151,7 +174,7 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Twenty-five tests passed locally on Python 3.12: seven analysis tests, seven Streamlit interaction/error tests, and eleven harness tests. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
+Forty-two tests passed locally on Python 3.12, covering analysis, Streamlit interactions, the impact harness, graph retrieval, and simulated provider responses. Ten offline template reference cases also pass; no live model quality benchmark has been run. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
 
 ## Scope and limitations
 
@@ -159,7 +182,7 @@ Twenty-five tests passed locally on Python 3.12: seven analysis tests, seven Str
 - Potential impact indicates a dependency path, not a demonstrated breaking change.
 - Source locations and confidence labels do not prove business correctness.
 - No column-level lineage, dynamic SQL, DAX, TMDL, Power BI report mapping, or live database integration is implemented.
-- A Streamlit interface is implemented, with the owner-provided hosted app linked above. No AI explanation is implemented yet.
+- A Streamlit interface is implemented, with the owner-provided hosted app linked above. Graph-grounded template answers and an optional local structured model-generation adapter are implemented; live provider verification is pending.
 - The pinned published Graphify package is used; this application does not require modifying the Graphify fork. Indirect dependencies are not fully locked.
 
 ## Roadmap
@@ -168,7 +191,8 @@ Twenty-five tests passed locally on Python 3.12: seven analysis tests, seven Str
 - [ ] Additional SQL fixtures and measured coverage of supported/unsupported cases.
 - [x] Streamlit interface for selecting an object and inspecting evidence paths.
 - [x] Deterministic harness foundation: strict plan permissions, one impact-tool attempt, fixture evidence checks, and downloadable receipts.
-- [ ] Optional model planner and explanation: explicit opt-in, bounded provider calls, natural-language intent checks, and evaluation against held-out examples.
+- [x] Scoped graph retrieval, cited template answers, and an opt-in structured model-generation adapter with mocked-provider tests.
+- [ ] Live provider verification, broader SQL fixtures, natural-language intent checks, and held-out model task evaluation.
 
 ## Attribution
 
