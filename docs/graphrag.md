@@ -3,7 +3,7 @@
 ## Implemented scope
 
 This milestone applies the graph-based retrieval-augmented generation pattern
-to the existing Graphify SQL fixture. It is not Microsoft's GraphRAG package or
+to two registered Graphify SQL fixtures: retail and synthetic education. It is not Microsoft's GraphRAG package or
 its global/community-summary pipeline. No embeddings, vector store, new database,
 or additional Python dependency is introduced.
 
@@ -19,18 +19,21 @@ no live provider request or LLM task-quality benchmark has been run.
 
 ## Retrieval and evidence
 
-`src/graphrag.py` first invokes the existing controlled impact harness. The
-verified downstream paths are filtered by question kind. An indirect question
+`src/graphrag.py` selects a fixed retrieval adapter from the caller's corpus choice.
+Retail uses the existing impact harness; education uses its source/reference checker.
+Each returns validated paths, which are filtered by question kind. No generator can
+change the selected corpus, choose file paths, execute SQL, or expand the object set. An indirect question
 retains the intermediate hops needed to justify the connection.
 
-Each retrieved edge receives a context-local ID such as E1, its consumer and
+Each retrieved edge receives a context-local ID (retail E1 or education education:E1), its consumer and
 dependency, source file, source line, Graphify confidence label, and that line's
-SQL excerpt. The context includes the source hash and scope. It contains only
+SQL excerpt. The context includes corpus, fingerprint kind, hash and scope. Retail hashes its SQL
+source; education hashes all three sources plus its reference JSON. It contains only
 the selected paths, not the whole graph or all SQL files. IDs identify evidence
 within one answer package; they are not globally persistent citations.
 
-The fixed context budget is 16,000 serialized UTF-8 bytes. The underlying harness
-permits one impact-tool attempt per question. An app rerun also performs its
+The fixed context budget is 16,000 serialized UTF-8 bytes. Each question permits one fixed retrieval-tool invocation: the retail harness
+or the education reference checker, which internally checks all eight scenarios. An app rerun also performs its
 existing dashboard analysis separately; the per-question budget does not bound
 all work in an entire browser session. There is no query or pipeline deadline.
 
@@ -66,18 +69,19 @@ SQL runtime behavior, or natural-language explanation quality.
 
 ## Use the dashboard
 
-Select a SQL object, scroll to **Graph-grounded question preview**, choose all,
+Scroll to **Graph-grounded question preview**, choose the question corpus,
+select an object (the main explorer controls the retail object), choose all,
 direct, or indirect downstream views, then click **Retrieve graph-grounded
 answer**. The evidence table maps each citation to its SQL source. Download the
-answer package for review. Changing the selected object, question kind, or
-source hash hides the previous answer until a fresh retrieval is submitted.
+answer package for review. Changing the selected corpus, object, question kind, or
+source fingerprint hides the previous answer until a fresh retrieval is submitted.
 
 ## Run offline
 
 From the repository root after the normal installation:
 
 ```bash
-.venv/bin/python -m src.graphrag --object orders --kind indirect
+.venv/bin/python -m src.graphrag --corpus education --object attendance_events --kind indirect
 .venv/bin/python -m evals.evaluate_graphrag
 .venv/bin/python -m unittest discover -s tests -t . -v
 ```
@@ -90,7 +94,7 @@ does not use credentials even if provider environment variables are set.
 Choose a model ID available to your own Anthropic account and replace MODEL_ID:
 
 ```bash
-.venv/bin/python -m src.graphrag --object orders --kind indirect --live --model MODEL_ID
+.venv/bin/python -m src.graphrag --corpus education --object attendance_events --kind indirect --live --model MODEL_ID
 ```
 
 The API key is read from ANTHROPIC_API_KEY or a hidden terminal prompt. Never
@@ -108,15 +112,20 @@ only in explicit live mode. The public app cannot enable provider calls.
 
 ## Validation and next work
 
-The full suite has 42 tests, including graph retrieval, complete multi-hop
+The full suite has 60 tests, including graph retrieval, complete multi-hop
 citations, wrong claims/citations, no-context behavior, provider error and size
 handling, CLI JSON, and dashboard selection invalidation. Provider tests use
 simulated responses and make no live calls.
 
-Ten manually specified reference cases pass in template mode. They exercise
-the known fixture and are not held-out research tasks or a comparison against
+Twenty manually specified reference cases pass in template mode. They exercise
+the two known fixtures and are not held-out research tasks or a comparison against
 vector RAG. No retrieval-performance, token-saving, or model-quality gain has
 been established. The reference evaluator reports exactly what it checked.
+
+The public selector permits only retail/education. Cross-corpus object requests fail
+before generation, and wrong-corpus citation IDs are rejected by the same exact-path
+claim checks. Provider tests exercise valid simulated claims from each corpus. This
+is not an ACL system or proof of multi-tenant isolation.
 
 Next work: verify one live request, expand independently checked SQL fixtures,
 define held-out natural-language tasks before adding question parsing, and

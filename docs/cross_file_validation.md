@@ -72,8 +72,10 @@ and click **Verify cross-file example**. Inspect the affected views and expand
 their evidence paths. The report can be downloaded. Changing the education
 object or any source/reference bytes hides the old report until rerun.
 
-This section is separate from the retail impact harness and GraphRAG preview.
-The new education example is not yet supported by model-backed generation.
+This reference-check section remains separate from the retail impact harness.
+The GraphRAG question interface now also supports education: select education as
+its question corpus. The public preview is template-only. The optional local
+model adapter supports either corpus; live model verification remains pending.
 
 ## Observed validation and limits
 
@@ -87,6 +89,6 @@ These results establish behavior on two known fixtures, not a held-out model
 evaluation, general SQL accuracy, column-level lineage, DAX/TMDL support,
 runtime breakage detection, or correctness of educational decisions.
 
-Next: extend the retrieval/harness interface to select a validated corpus,
-then evaluate cited generation on both corpora. Keep the expected results
-independent of the extractor and model when adding further cases.
+The selected-corpus retrieval interface is implemented, with simulated generation
+checks for both corpora. Next: verify a live request and add held-out evaluation
+questions. Keep expected results independent of the extractor and model.

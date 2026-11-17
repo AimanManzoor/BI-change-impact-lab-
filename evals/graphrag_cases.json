@@ -1,12 +1,226 @@
 [
-  {"object":"orders","kind":"all","status":"completed","consumers":["order_summary","regional_sales"]},
-  {"object":"orders","kind":"direct","status":"completed","consumers":["order_summary"]},
-  {"object":"orders","kind":"indirect","status":"completed","consumers":["regional_sales"]},
-  {"object":"customers","kind":"all","status":"completed","consumers":["customer_directory","regional_sales"]},
-  {"object":"customers","kind":"indirect","status":"no_context","consumers":[]},
-  {"object":"order_summary","kind":"all","status":"completed","consumers":["regional_sales"]},
-  {"object":"regional_sales","kind":"all","status":"no_context","consumers":[]},
-  {"object":"customer_directory","kind":"all","status":"no_context","consumers":[]},
-  {"object":"unknown","kind":"all","status":"retrieval_error","consumers":[]},
-  {"object":"orders","kind":"root_cause","status":"retrieval_error","consumers":[]}
+  {
+    "object": "orders",
+    "kind": "all",
+    "status": "completed",
+    "consumers": [
+      "order_summary",
+      "regional_sales"
+    ],
+    "corpus": "retail",
+    "depths": [
+      1,
+      2
+    ]
+  },
+  {
+    "object": "orders",
+    "kind": "direct",
+    "status": "completed",
+    "consumers": [
+      "order_summary"
+    ],
+    "corpus": "retail",
+    "depths": [
+      1
+    ]
+  },
+  {
+    "object": "orders",
+    "kind": "indirect",
+    "status": "completed",
+    "consumers": [
+      "regional_sales"
+    ],
+    "corpus": "retail",
+    "depths": [
+      2
+    ]
+  },
+  {
+    "object": "customers",
+    "kind": "all",
+    "status": "completed",
+    "consumers": [
+      "customer_directory",
+      "regional_sales"
+    ],
+    "corpus": "retail",
+    "depths": [
+      1,
+      1
+    ]
+  },
+  {
+    "object": "customers",
+    "kind": "indirect",
+    "status": "no_context",
+    "consumers": [],
+    "corpus": "retail",
+    "depths": []
+  },
+  {
+    "object": "order_summary",
+    "kind": "all",
+    "status": "completed",
+    "consumers": [
+      "regional_sales"
+    ],
+    "corpus": "retail",
+    "depths": [
+      1
+    ]
+  },
+  {
+    "object": "regional_sales",
+    "kind": "all",
+    "status": "no_context",
+    "consumers": [],
+    "corpus": "retail",
+    "depths": []
+  },
+  {
+    "object": "customer_directory",
+    "kind": "all",
+    "status": "no_context",
+    "consumers": [],
+    "corpus": "retail",
+    "depths": []
+  },
+  {
+    "object": "unknown",
+    "kind": "all",
+    "status": "retrieval_error",
+    "consumers": [],
+    "corpus": "retail",
+    "depths": []
+  },
+  {
+    "object": "orders",
+    "kind": "root_cause",
+    "status": "retrieval_error",
+    "consumers": [],
+    "corpus": "retail",
+    "depths": []
+  },
+  {
+    "corpus": "education",
+    "object": "attendance_events",
+    "kind": "all",
+    "status": "completed",
+    "consumers": [
+      "attendance_summary",
+      "attendance_report",
+      "review_candidates",
+      "regional_review"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "attendance_events",
+    "kind": "direct",
+    "status": "completed",
+    "consumers": [
+      "attendance_summary"
+    ],
+    "depths": [
+      1
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "attendance_events",
+    "kind": "indirect",
+    "status": "completed",
+    "consumers": [
+      "attendance_report",
+      "review_candidates",
+      "regional_review"
+    ],
+    "depths": [
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "behavior_events",
+    "kind": "all",
+    "status": "completed",
+    "consumers": [
+      "behavior_summary",
+      "review_candidates",
+      "regional_review"
+    ],
+    "depths": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "enrollment",
+    "kind": "direct",
+    "status": "completed",
+    "consumers": [
+      "attendance_report",
+      "regional_review"
+    ],
+    "depths": [
+      1,
+      1
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "enrollment",
+    "kind": "indirect",
+    "status": "completed",
+    "consumers": [
+      "review_candidates"
+    ],
+    "depths": [
+      2
+    ]
+  },
+  {
+    "corpus": "education",
+    "object": "regional_review",
+    "kind": "all",
+    "status": "no_context",
+    "consumers": [],
+    "depths": []
+  },
+  {
+    "corpus": "education",
+    "object": "orders",
+    "kind": "all",
+    "status": "retrieval_error",
+    "consumers": [],
+    "depths": []
+  },
+  {
+    "corpus": "retail",
+    "object": "attendance_events",
+    "kind": "all",
+    "status": "retrieval_error",
+    "consumers": [],
+    "depths": []
+  },
+  {
+    "corpus": "unknown",
+    "object": "orders",
+    "kind": "all",
+    "status": "retrieval_error",
+    "consumers": [],
+    "depths": []
+  }
 ]

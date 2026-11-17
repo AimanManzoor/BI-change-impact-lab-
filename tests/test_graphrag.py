@@ -108,7 +108,7 @@ class GraphRAGTests(unittest.TestCase):
 
     def test_offline_reference_cases(self):
         report = evaluate()
-        self.assertEqual((report['cases'], report['passed'], report['model_calls']), (10, 10, 0))
+        self.assertEqual((report['cases'], report['passed'], report['model_calls']), (20, 20, 0))
 
     def test_cli_default_is_json_template_without_credentials(self):
         proc = subprocess.run([sys.executable, '-m', 'src.graphrag', '--object', 'orders'],

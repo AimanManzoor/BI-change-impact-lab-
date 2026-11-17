@@ -8,8 +8,10 @@ import os
 import sys
 from src.harness import run_harness, _unique_object
 from src.impact import ROOT
+from src.education_check import check_education, SQL_FILES
 
 QUESTION_KINDS = ('all', 'direct', 'indirect')
+CORPORA = ('retail', 'education')
 
 
 class RetrievalFailure(ValueError):
@@ -24,45 +26,61 @@ def parse_claims(text):
     return json.loads(text, object_pairs_hook=_unique_object)
 
 
-def retrieve_context(object_name, kind='all', result=None):
+def retrieve_context(object_name, kind='all', result=None, *, corpus='retail'):
+    if corpus not in CORPORA:
+        raise ValueError('Select a registered corpus: retail or education.')
     if kind not in QUESTION_KINDS:
         raise ValueError('Unsupported question kind.')
-    receipt = run_harness(object_name, json.dumps(
-        {'tool': 'trace_downstream', 'object': object_name}), result)
+    if corpus == 'retail':
+        receipt = run_harness(object_name, json.dumps(
+            {'tool': 'trace_downstream', 'object': object_name}), result)
+    else:
+        # One fixed checker invocation, including source loading and references.
+        # Caller selects the corpus; a generator cannot select files or run SQL.
+        try:
+            checked = check_education(object_name, result=result)
+            receipt = {'status': 'completed' if checked['potentially_affected'] else 'no_consumers_in_fixture',
+                       'tool_calls': 1, 'report': checked,
+                       'source_sha256': checked['source_and_reference_sha256']}
+        except (ValueError, OSError, ImportError, KeyError, TypeError) as exc:
+            raise RetrievalFailure(1) from exc
     if receipt['status'] not in {'completed', 'no_consumers_in_fixture'}:
         raise RetrievalFailure(receipt['tool_calls'])
     try:
-        return _package_context(object_name, kind, receipt)
+        return _package_context(object_name, kind, receipt, corpus)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         raise RetrievalFailure(receipt['tool_calls']) from exc
 
 
-def _package_context(object_name, kind, receipt):
+def _package_context(object_name, kind, receipt, corpus):
     hits = receipt['report']['potentially_affected']
     selected = [h for h in hits if kind == 'all' or
                 (kind == 'direct' and h['depth'] == 1) or
                 (kind == 'indirect' and h['depth'] > 1)]
     evidence, claims, identities = [], [], {}
-    lines = (ROOT/'examples/retail.sql').read_text().splitlines()
+    files = (ROOT/'examples/retail.sql',) if corpus == 'retail' else SQL_FILES
+    sources = {str(path.relative_to(ROOT)): path.read_text().splitlines() for path in files}
     for hit in selected:
         refs = []
         for hop in hit['evidence_path']:
             identity = tuple(hop[k] for k in
                              ('consumer', 'dependency', 'source_file', 'source_location', 'confidence'))
             if identity not in identities:
-                ref = f'E{len(evidence)+1}'
+                ref = f'E{len(evidence)+1}' if corpus == 'retail' else f'education:E{len(evidence)+1}'
                 identities[identity] = ref
-                if hop['source_file'] != 'examples/retail.sql':
+                if hop['source_file'] not in sources:
                     raise ValueError('Evidence source is outside the supported fixture.')
+                lines = sources[hop['source_file']]
                 line = int(hop['source_location'].removeprefix('L'))
                 if not 1 <= line <= len(lines):
                     raise ValueError('Source location is outside the SQL fixture.')
                 evidence.append({'id': ref, **hop, 'sql_excerpt': lines[line-1]})
             refs.append(identities[identity])
         claims.append({'object': hit['object'], 'depth': hit['depth'], 'evidence_ids': refs})
-    package = {'object': object_name, 'question_kind': kind,
+    package = {'corpus': corpus, 'object': object_name, 'question_kind': kind,
                'question': f'Which {kind} downstream views could be affected if {object_name} changes?',
                'scope': receipt['report']['scope'], 'source_sha256': receipt['source_sha256'],
+               'fingerprint_kind': 'sql_source' if corpus == 'retail' else 'sources_and_reference',
                'claims_to_cover': claims, 'evidence': evidence}
     if len(json.dumps(package).encode('utf-8')) > 16000:
         raise ValueError('Graph context exceeds the supported byte budget.')
@@ -105,12 +123,12 @@ def render_answer(claims, context):
     return '\n'.join(lines)
 
 
-def answer_question(object_name, kind='all', *, generator=None, result=None):
+def answer_question(object_name, kind='all', *, generator=None, result=None, corpus='retail'):
     answer = {'status': 'retrieval_error', 'mode': 'model' if generator else 'template',
               'model_calls': 0, 'retrieval_tool_calls': 0, 'answer': None,
               'context': None, 'human_review_required': True}
     try:
-        context, receipt = retrieve_context(object_name, kind, result)
+        context, receipt = retrieve_context(object_name, kind, result, corpus=corpus)
     except (ValueError, OSError, ImportError, KeyError, TypeError) as exc:
         answer['error_type'] = type(exc).__name__
         answer['retrieval_tool_calls'] = getattr(exc, 'tool_calls', 0)
@@ -141,6 +159,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--object', default='orders')
     parser.add_argument('--kind', choices=QUESTION_KINDS, default='all')
+    parser.add_argument('--corpus', choices=CORPORA, default='retail')
     parser.add_argument('--live', action='store_true', help='Opt in to one potentially billable model request.')
     parser.add_argument('--model', default=os.getenv('ANTHROPIC_MODEL'))
     args = parser.parse_args()
@@ -153,7 +172,7 @@ def main():
         except ValueError as exc:
             parser.error(str(exc))
     with redirect_stdout(sys.stderr):
-        answer = answer_question(args.object, args.kind, generator=generator)
+        answer = answer_question(args.object, args.kind, generator=generator, corpus=args.corpus)
     if generator is not None:
         answer['provider'] = generator.metadata
     print(json.dumps(answer, indent=2))

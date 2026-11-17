@@ -10,7 +10,7 @@ from src.education_check import OBJECTS as EDUCATION_OBJECTS, check_education, s
 st.set_page_config(page_title='BI Change Impact Lab', layout='wide')
 st.title('BI Change Impact Lab')
 st.write('Explore how a SQL change could flow into dependent views.')
-st.caption('Synthetic retail example only. Powered by Graphify. No AI calls or live database access.')
+st.caption('Synthetic SQL examples powered by Graphify. Retail analysis, plus retail/education graph-grounded questions. No AI calls or live database access.')
 
 try:
     result = extract_fixture()
@@ -83,27 +83,38 @@ st.caption('Four dependency pairs checked against a manually specified reference
 
 st.subheader('Graph-grounded question preview')
 st.caption('Template mode: retrieve relevant graph paths and show checked citations. No LLM call or API key. Optional model generation is available through the local CLI.')
+question_corpus = st.radio('Question corpus', ('retail', 'education'), key='gr_corpus')
+st.caption('This choice controls only the question section. The retail dependency map above and the education reference checker below keep their own scopes.')
+query_object = selected if question_corpus == 'retail' else st.selectbox(
+    'Education object for this question', EDUCATION_OBJECTS, key='gr_education_object')
 question_labels = {'All downstream views': 'all', 'Direct downstream views': 'direct',
                    'Indirect downstream views': 'indirect'}
 question_label = st.radio('Which impacts should the answer cover?', list(question_labels), key='gr_kind')
 question_kind = question_labels[question_label]
-answer_key = (selected, question_kind, receipt['source_sha256'])
-if st.button('Retrieve graph-grounded answer', key='gr_answer'):
-    st.session_state['gr_result'] = (answer_key, answer_question(selected, question_kind, result=result))
+try:
+    question_hash = receipt['source_sha256'] if question_corpus == 'retail' else source_fingerprint()
+    answer_key = (question_corpus, query_object, question_kind, question_hash)
+except OSError:
+    answer_key = None
+    st.error('The selected question corpus is unavailable.')
+if st.button('Retrieve graph-grounded answer', key='gr_answer', disabled=answer_key is None):
+    st.session_state['gr_result'] = (answer_key, answer_question(
+        query_object, question_kind, corpus=question_corpus,
+        result=result if question_corpus == 'retail' else None))
 stored = st.session_state.get('gr_result')
-if stored is not None and stored[0] == answer_key:
+if answer_key is not None and stored is not None and stored[0] == answer_key:
     grounded = stored[1]
     if grounded['status'] in {'completed', 'no_context'}:
         st.markdown(grounded['answer'])
         if grounded['context']['evidence']:
             st.dataframe(grounded['context']['evidence'], hide_index=True, width='stretch')
         st.download_button('Download graph-grounded answer', json.dumps(grounded, indent=2),
-                           file_name=f'graph_answer_{selected}_{question_kind}.json', mime='application/json')
+                           file_name=f'graph_answer_{question_corpus}_{query_object}_{question_kind}.json', mime='application/json')
     else:
         st.error('The graph-grounded answer could not be verified. No answer is displayed.')
 
 st.subheader('Cross-file SQL validation: education example')
-st.caption('A separate synthetic example: three files, eight SQL objects, and eight independently specified dependency pairs. This section checks extraction and traversal; retail GraphRAG above is unchanged.')
+st.caption('A separate reference-check view: three files, eight SQL objects, and eight independently specified dependency pairs. To ask cited questions about these objects, select education in the Graph-grounded question preview above.')
 education_object = st.radio('Which education object might change?', EDUCATION_OBJECTS,
                             key='education_object')
 try:

@@ -183,10 +183,38 @@ fingerprint changes.
 ```
 
 All **52 tests** passed locally. No API calls or real student data are involved.
-This broadens extraction/traversal validation; it does not yet extend the
-retail GraphRAG generator to education or establish performance on arbitrary SQL.
+This milestone broadened extraction/traversal validation. The later selected-corpus
+milestone below extends retrieval/generation support to education; neither establishes
+performance on arbitrary SQL.
 
 See [cross-file validation guide](docs/cross_file_validation.md).
+
+## Milestone 6: GraphRAG across two validated corpora
+
+In **Graph-grounded question preview**, choose **retail** or **education**.
+Retail uses the selected object from the main explorer. Education has its own
+object selector. Both support all, direct, and indirect downstream questions.
+
+The selected corpus is a caller-controlled allowlist. Only its registered SQL
+files may supply evidence. Education citations use IDs such as
+`[education:E1]`; retail retains `[E1]`. Every claim must retain its complete
+ordered evidence path. Unknown corpora and other-corpus objects stop retrieval
+before generation. Switching corpus, object, question kind or fingerprint hides
+the previous answer.
+
+```bash
+.venv/bin/python -m src.graphrag --corpus education --object attendance_events --kind indirect
+.venv/bin/python -m evals.evaluate_graphrag
+```
+
+All **60 tests** and **20 offline template reference cases** passed locally.
+The public dashboard makes zero model calls. The optional local model adapter
+accepts either corpus, with simulated-response tests for both; live provider
+verification and model-quality evaluation remain pending. The corpus selector
+is not a multi-user access-control system, free-form query parser, or arbitrary
+repository upload feature.
+
+See [the GraphRAG guide](docs/graphrag.md) for context scope and optional live setup.
 
 ## How it works
 
@@ -200,11 +228,11 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Fifty-two tests passed locally on Python 3.12, covering analysis, Streamlit interactions, the impact harness, graph retrieval, and simulated provider responses. Ten offline retail template reference cases and eight education object/depth reference scenarios pass; no live model quality benchmark has been run. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
+Sixty tests passed locally on Python 3.12, covering analysis, Streamlit interactions, the impact harness, graph retrieval, and simulated provider responses. Twenty offline template reference cases across both corpora and eight education object/depth reference scenarios pass; no live model quality benchmark has been run. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
 
 ## Scope and limitations
 
-- Two fixed synthetic examples are included: retail drives the impact harness/GraphRAG preview, while education has a separate cross-file validation flow. Neither accepts arbitrary-corpus input.
+- Two fixed synthetic examples are included. GraphRAG can select retail or education; the retail impact harness and the standalone education reference checker supply validated context. Neither accepts arbitrary-corpus input.
 - Potential impact indicates a dependency path, not a demonstrated breaking change.
 - Source locations and confidence labels do not prove business correctness.
 - No column-level lineage, dynamic SQL, DAX, TMDL, Power BI report mapping, or live database integration is implemented.
@@ -215,7 +243,8 @@ Fifty-two tests passed locally on Python 3.12, covering analysis, Streamlit inte
 
 - [x] Synthetic SQL fixture, Graphify extraction, independent expected dependencies and source-backed traversal.
 - [x] A second, multi-file synthetic education fixture with independent dependency and impact references.
-- [ ] Broader dialect/repository coverage and education integration with the model-backed retrieval interface.
+- [x] A selected-corpus GraphRAG interface for retail and education, with scoped citations and reference cases.
+- [ ] Broader SQL dialect/repository coverage.
 - [x] Streamlit interface for selecting an object and inspecting evidence paths.
 - [x] Deterministic harness foundation: strict plan permissions, one impact-tool attempt, fixture evidence checks, and downloadable receipts.
 - [x] Scoped graph retrieval, cited template answers, and an opt-in structured model-generation adapter with mocked-provider tests.
