@@ -162,6 +162,32 @@ evaluation remain unverified. This applies the graph-based RAG pattern to our
 small fixture; it does not install Microsoft's GraphRAG framework, implement
 free-form question understanding, or establish improvements over vector RAG.
 
+## Milestone 5: cross-file SQL validation
+
+A second synthetic education-reporting example spans **three SQL files, eight
+objects, and eight dependency pairs**. A separate dashboard section checks
+every dependency and eight independently specified downstream scenarios.
+
+Try `attendance_events`: the verified path reaches `attendance_summary`,
+`attendance_report`, `review_candidates`, then `regional_review` at four hops.
+The checker also tests unrelated branches, shorter alternative paths and leaf
+objects. Missing or unexpected dependencies stop the report.
+
+In the app, scroll to **Cross-file SQL validation: education example**, select
+an object, and click **Verify cross-file example**. Expand an evidence path or
+download the report. Previous results are hidden when the object or source
+fingerprint changes.
+
+```bash
+.venv/bin/python -m src.education_check --object attendance_events
+```
+
+All **52 tests** passed locally. No API calls or real student data are involved.
+This broadens extraction/traversal validation; it does not yet extend the
+retail GraphRAG generator to education or establish performance on arbitrary SQL.
+
+See [cross-file validation guide](docs/cross_file_validation.md).
+
 ## How it works
 
 1. `examples/retail.sql` supplies the synthetic source. It contains no organization data.
@@ -174,11 +200,11 @@ The CLI reads SQL as source text; it does not execute SQL. One test separately e
 
 ## Verification
 
-Forty-two tests passed locally on Python 3.12, covering analysis, Streamlit interactions, the impact harness, graph retrieval, and simulated provider responses. Ten offline template reference cases also pass; no live model quality benchmark has been run. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
+Fifty-two tests passed locally on Python 3.12, covering analysis, Streamlit interactions, the impact harness, graph retrieval, and simulated provider responses. Ten offline retail template reference cases and eight education object/depth reference scenarios pass; no live model quality benchmark has been run. Checks cover the four expected dependencies, direct/transitive impact, unrelated objects, leaf objects, unknown names, changed/missing edges, missing evidence, cycle handling, executable SQL, object selection, evidence-path inspection, clearing stale results, and stopping on invalid or missing fixtures. This is a small fixture validation, not a general SQL parser benchmark. GitHub Actions also passed for the Streamlit milestone ([run](https://github.com/AimanManzoor/BI-change-impact-lab-/actions/runs/43686739869)). The workflow runs the suite on subsequent pushes; check Actions for the latest outcome.
 
 ## Scope and limitations
 
-- Only the bundled SQL fixture is supported in this milestone. The CLI has no arbitrary-corpus input.
+- Two fixed synthetic examples are included: retail drives the impact harness/GraphRAG preview, while education has a separate cross-file validation flow. Neither accepts arbitrary-corpus input.
 - Potential impact indicates a dependency path, not a demonstrated breaking change.
 - Source locations and confidence labels do not prove business correctness.
 - No column-level lineage, dynamic SQL, DAX, TMDL, Power BI report mapping, or live database integration is implemented.
@@ -188,7 +214,8 @@ Forty-two tests passed locally on Python 3.12, covering analysis, Streamlit inte
 ## Roadmap
 
 - [x] Synthetic SQL fixture, Graphify extraction, independent expected dependencies and source-backed traversal.
-- [ ] Additional SQL fixtures and measured coverage of supported/unsupported cases.
+- [x] A second, multi-file synthetic education fixture with independent dependency and impact references.
+- [ ] Broader dialect/repository coverage and education integration with the model-backed retrieval interface.
 - [x] Streamlit interface for selecting an object and inspecting evidence paths.
 - [x] Deterministic harness foundation: strict plan permissions, one impact-tool attempt, fixture evidence checks, and downloadable receipts.
 - [x] Scoped graph retrieval, cited template answers, and an opt-in structured model-generation adapter with mocked-provider tests.

@@ -4,6 +4,7 @@ import streamlit as st
 from src.impact import ROOT, extract_fixture, verify_fixture
 from src.harness import run_harness
 from src.graphrag import answer_question
+from src.education_check import OBJECTS as EDUCATION_OBJECTS, check_education, source_fingerprint
 
 
 st.set_page_config(page_title='BI Change Impact Lab', layout='wide')
@@ -100,3 +101,36 @@ if stored is not None and stored[0] == answer_key:
                            file_name=f'graph_answer_{selected}_{question_kind}.json', mime='application/json')
     else:
         st.error('The graph-grounded answer could not be verified. No answer is displayed.')
+
+st.subheader('Cross-file SQL validation: education example')
+st.caption('A separate synthetic example: three files, eight SQL objects, and eight independently specified dependency pairs. This section checks extraction and traversal; retail GraphRAG above is unchanged.')
+education_object = st.radio('Which education object might change?', EDUCATION_OBJECTS,
+                            key='education_object')
+try:
+    education_key = (education_object, source_fingerprint())
+except OSError:
+    education_key = None
+    st.error('Education sources are unavailable.')
+if st.button('Verify cross-file example', key='education_verify', disabled=education_key is None):
+    st.session_state.pop('education_result', None)
+    try:
+        st.session_state['education_result'] = (education_key, check_education(education_object))
+    except (ValueError, OSError, KeyError, TypeError):
+        st.error('Cross-file verification failed. No education impact report is displayed.')
+education_stored = st.session_state.get('education_result')
+if education_key is not None and education_stored is not None and education_stored[0] == education_key:
+    education = education_stored[1]
+    st.success(f"Verified {education['dependency_pairs']} dependency pairs and {education['reference_cases_passed']} reference scenarios across three files.")
+    st.caption('This does not establish runtime breakage, correct educational decisions, DAX lineage, or support for arbitrary repositories. No real student data is included.')
+    if education['potentially_affected']:
+        st.dataframe([{'view': h['object'], 'hops': h['depth']} for h in education['potentially_affected']],
+                     hide_index=True, width='stretch')
+        for h in education['potentially_affected']:
+            with st.expander(f"Evidence for {h['object']} ({h['depth']} hops)"):
+                st.dataframe(h['evidence_path'], hide_index=True, width='stretch')
+    else:
+        st.info('No downstream consumer exists for this object in the education fixture.')
+    with st.expander('All checked education dependencies'):
+        st.dataframe(education['relationships'], hide_index=True, width='stretch')
+    st.download_button('Download cross-file validation report', json.dumps(education, indent=2),
+                       file_name=f'education_impact_{education_object}.json', mime='application/json')

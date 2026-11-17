@@ -1,0 +1,22 @@
+{
+  "dependencies": [
+    ["attendance_summary", "attendance_events"],
+    ["behavior_summary", "behavior_events"],
+    ["attendance_report", "enrollment"],
+    ["attendance_report", "attendance_summary"],
+    ["review_candidates", "attendance_report"],
+    ["review_candidates", "behavior_summary"],
+    ["regional_review", "review_candidates"],
+    ["regional_review", "enrollment"]
+  ],
+  "impacts": {
+    "enrollment": {"attendance_report": 1, "regional_review": 1, "review_candidates": 2},
+    "attendance_events": {"attendance_summary": 1, "attendance_report": 2, "review_candidates": 3, "regional_review": 4},
+    "behavior_events": {"behavior_summary": 1, "review_candidates": 2, "regional_review": 3},
+    "attendance_summary": {"attendance_report": 1, "review_candidates": 2, "regional_review": 3},
+    "behavior_summary": {"review_candidates": 1, "regional_review": 2},
+    "attendance_report": {"review_candidates": 1, "regional_review": 2},
+    "review_candidates": {"regional_review": 1},
+    "regional_review": {}
+  }
+}
