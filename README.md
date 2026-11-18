@@ -253,3 +253,74 @@ Sixty tests passed locally on Python 3.12, covering analysis, Streamlit interact
 ## Attribution
 
 Built using [Graphify](https://github.com/Graphify-Labs/graphify), an Apache-2.0 project. Graphify supplies extraction; this repository supplies the synthetic example, expected-dependency checks, impact traversal, and tests. This project is independent and is not affiliated with or endorsed by Graphify Labs.
+
+## REA SQLite schema verification
+
+This optional local experiment connects REA database inspection with
+Graphify dependency extraction. It is limited to the bundled synthetic
+retail fixture: two tables, three views, and four expected dependencies.
+
+REA recovers stored SQL declarations. The Python checker validates the
+recovered objects, analyses the SQL without executing it, compares
+dependencies with the existing reference, and verifies downstream
+impacts from `orders`.
+
+### Reproduce
+
+Use Python dependencies from requirements.txt. REA is an optional
+external CLI; this experiment uses rea-agents 6.9.0. That release requires
+Node.js ^22.23.4, ^24.22.1, or >=26.12.1; SQLite inspection additionally
+requires the supported native SQLite capability in Node 24/26.
+
+Create the synthetic database once, from the repository root:
+
+```bash
+.venv/bin/python - <<'PYTHON'
+import sqlite3
+from pathlib import Path
+
+database = Path("reports/generated/retail_demo.sqlite")
+if database.exists():
+    raise SystemExit("Database exists; inspect it before replacing it.")
+database.parent.mkdir(parents=True, exist_ok=True)
+with sqlite3.connect(database) as connection:
+    connection.executescript(
+        Path("examples/retail.sql").read_text(encoding="utf-8")
+    )
+print(database)
+PYTHON
+```
+
+Inspect the database and verify the recovered definitions:
+
+```bash
+npx --package=rea-agents@6.9.0 rea inspect-sqlite-database ./reports/generated/retail_demo.sqlite --schema-scope database --json > reports/generated/rea_schema.json
+.venv/bin/python -m src.rea_check --evidence reports/generated/rea_schema.json
+```
+
+Expected result: `reference_verified`, five objects and four dependencies.
+Changing `orders` potentially affects `order_summary` directly and
+`regional_sales` indirectly.
+
+The report embeds the recovered SQL and its line references, plus SHA-256
+fingerprints of the evidence file and recovered SQL. Fingerprints identify
+content; they do not authenticate the inspection or prove correctness.
+
+### Tests and limitations
+
+Six additional regression tests cover valid recovery, missing or multiple
+schemas, missing/duplicate/misclassified objects, missing SQL, incorrect
+dependencies, and missing evidence files. The tests construct a minimal
+evidence envelope; they do not invoke REA, Node.js, or a model.
+
+This is fixture-scoped integration validation, not support for arbitrary
+databases, column-level lineage, DAX/TMDL analysis, or confirmed breaking
+changes. REA inspection and graph extraction are separate stages.
+Human review remains required. The hosted dashboard is unchanged.
+
+Generated databases and inspection reports remain local under the ignored
+reports/generated/ directory.
+
+External tools:
+- REA: https://github.com/morluto/rea
+- Project owner's REA fork: https://github.com/AimanManzoor/rea
