@@ -353,7 +353,7 @@ The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
 This lets other programs reliably parse its output.
 
 Three additional regression tests cover all five objects, invalid selections,
-and CLI behavior. The complete suite now contains 86 tests.
+and CLI behavior. The complete suite now contains 94 tests.
 The existing 20 offline GraphRAG reference cases remain separate checks.
 The Streamlit interface now includes a separate bundled REA demo.
 
@@ -414,3 +414,33 @@ reference questions; all **20 existing GraphRAG reference cases** also passed.
 The narrow intent gate is a conservative keyword baseline, not general language
 understanding. See [change-review methodology](docs/change_review_agent.md) for
 permissions, failure statuses, CLI setup, source handling and evaluation limits.
+
+
+## Planner evaluation dataset v1
+
+A versioned set of **22 manually specified questions** now evaluates the complete
+offline planner workflow. **16 regression cases pass**. **Six challenge cases
+currently fail**: paraphrases, benign assurances, hypothetical rename analysis,
+compound explanations, row-count requests, and upstream-direction requests reveal
+limits in the keyword baseline. These are development results, not a held-out
+model benchmark or a general language-understanding score.
+
+```bash
+.venv/bin/python -m evals.evaluate_planner
+.venv/bin/python -m evals.evaluate_planner --suite challenge --measure
+```
+
+Reports include expected/actual plans, consumer depths, tool-use checks, category
+results, status-confusion counts, and a reference fingerprint. The challenge
+measurement command returns success for completed measurements even when cases
+mismatch; read its failed count. Invalid references or infrastructure errors still
+fail. CI gates the supported regression cases and separately measures challenges.
+
+Local validation: **94 tests passed**, all **20 existing GraphRAG reference cases
+passed**, the planner regression suite matched **16/16**, and the challenge suite
+matched **0/6**. No planner logic, live provider call, or model-quality benchmark
+was introduced in this milestone. The existing live planner shares the same
+pre-model intent gate and cannot fix questions rejected before a model call.
+
+See [planner evaluation methodology](docs/planner_evaluation.md). The next step is
+to address a measured failure class and check that supported behavior is preserved.

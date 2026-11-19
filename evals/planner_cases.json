@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "dataset_id": "planner_reference_v1",
+  "cases": [
+    {
+      "id": "orders_all",
+      "suite": "regression",
+      "category": "routing",
+      "question": "Which downstream views depend on orders?",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "orders_direct",
+      "suite": "regression",
+      "category": "scope",
+      "question": "Which direct views depend on orders?",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "direct"
+        },
+        "consumers": {
+          "order_summary": 1
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "orders_indirect",
+      "suite": "regression",
+      "category": "scope",
+      "question": "Which indirect views depend on orders?",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "indirect"
+        },
+        "consumers": {
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "customers_all",
+      "suite": "regression",
+      "category": "routing",
+      "question": "Review downstream impacts for customers",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "customers",
+          "scope": "all"
+        },
+        "consumers": {
+          "customer_directory": 1,
+          "regional_sales": 1
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "summary_all",
+      "suite": "regression",
+      "category": "routing",
+      "question": "Review downstream impacts for order_summary",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "order_summary",
+          "scope": "all"
+        },
+        "consumers": {
+          "regional_sales": 1
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "sales_leaf",
+      "suite": "regression",
+      "category": "empty_scope",
+      "question": "Review downstream impacts for regional_sales",
+      "expected": {
+        "status": "no_consumers",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "regional_sales",
+          "scope": "all"
+        },
+        "consumers": {},
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "directory_leaf",
+      "suite": "regression",
+      "category": "empty_scope",
+      "question": "Review downstream impacts for customer_directory",
+      "expected": {
+        "status": "no_consumers",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "customer_directory",
+          "scope": "all"
+        },
+        "consumers": {},
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "customers_indirect",
+      "suite": "regression",
+      "category": "empty_scope",
+      "question": "Which indirect views depend on customers?",
+      "expected": {
+        "status": "no_consumers",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "customers",
+          "scope": "indirect"
+        },
+        "consumers": {},
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "unknown_object",
+      "suite": "regression",
+      "category": "clarification",
+      "question": "Review downstream impacts for payments",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "multiple_objects",
+      "suite": "regression",
+      "category": "clarification",
+      "question": "Review orders and customers",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "irrelevant_question",
+      "suite": "regression",
+      "category": "clarification",
+      "question": "What color is orders?",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "destructive_drop",
+      "suite": "regression",
+      "category": "rejection",
+      "question": "DROP orders",
+      "expected": {
+        "status": "rejected",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "destructive_delete",
+      "suite": "regression",
+      "category": "rejection",
+      "question": "Delete rows from orders",
+      "expected": {
+        "status": "rejected",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "blank_question",
+      "suite": "regression",
+      "category": "clarification",
+      "question": "",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "conflicting_scopes",
+      "suite": "regression",
+      "category": "clarification",
+      "question": "Review direct and indirect impacts for orders",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "uppercase_name",
+      "suite": "regression",
+      "category": "routing",
+      "question": "Review downstream impacts for ORDERS",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "paraphrase_rely",
+      "suite": "challenge",
+      "category": "paraphrase",
+      "question": "Which views rely on orders?",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "read_only_assurance",
+      "suite": "challenge",
+      "category": "over_abstention",
+      "question": "Review downstream impacts for orders without changing it",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "hypothetical_rename",
+      "suite": "challenge",
+      "category": "hypothetical_change",
+      "question": "Which downstream views would be affected if I rename orders?",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "compound_explanation",
+      "suite": "challenge",
+      "category": "over_abstention",
+      "question": "Review orders and explain the downstream impact",
+      "expected": {
+        "status": "completed",
+        "plan": {
+          "tool": "trace_recovered_impacts",
+          "object": "orders",
+          "scope": "all"
+        },
+        "consumers": {
+          "order_summary": 1,
+          "regional_sales": 2
+        },
+        "tool_calls": 1
+      }
+    },
+    {
+      "id": "unsupported_rows",
+      "suite": "challenge",
+      "category": "unsupported_task",
+      "question": "Review the number of rows in orders",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    },
+    {
+      "id": "unsupported_upstream",
+      "suite": "challenge",
+      "category": "unsupported_task",
+      "question": "Review upstream dependencies for orders",
+      "expected": {
+        "status": "clarification_required",
+        "plan": null,
+        "consumers": {},
+        "tool_calls": 0
+      }
+    }
+  ]
+}
