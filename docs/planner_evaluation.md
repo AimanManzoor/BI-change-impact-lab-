@@ -27,7 +27,7 @@ or empty scope; it is different from an invalid question or unavailable source.
 Challenge cases deliberately express desired task semantics rather than current
 keyword-policy behavior:
 
-| Question pattern | Desired outcome | Current limitation |
+| Question pattern | Desired outcome | Initial limitation |
 |---|---|---|
 | Views that rely on orders | Review orders | Paraphrase not recognised |
 | Review without changing it | Read-only review | Benign assurance triggers clarification |
@@ -70,7 +70,7 @@ mismatches remain visible in JSON, but do not fail the command. Invalid referenc
 unexpected runner failures, and planner/evidence operational errors still exit 2.
 Therefore a zero exit in measurement mode does not mean all cases passed.
 
-Without --measure, the challenge command currently exits 1 with six mismatches:
+Without --measure, the challenge command currently exits 1 with five mismatches:
 
 ```bash
 .venv/bin/python -m evals.evaluate_planner --suite challenge
@@ -102,3 +102,22 @@ The current live planner inherits the same conservative intent gate. It cannot
 recover questions stopped before the model is called. Comparing only the existing
 live adapter against these early-gate failures would not measure improved language
 understanding; the gate design must be addressed explicitly first.
+
+
+## Follow-up: constrained reliance phrasing
+
+A narrow intent rule now recognises the tested "Which views rely on ..."
+question family, including singular, progressive, direct/indirect and
+alternate-object variants.
+
+Three new test methods cover six accepted phrasings, seven stopped
+requests and a Streamlit interaction. The new tests detect the previous
+behavior and pass with the refinement.
+
+The same reference dataset yields 16/16 supported cases and 1/6 challenge
+cases, compared with 0/6 challenge cases before the change. The full
+regression suite contains 97 tests; all 20 GraphRAG cases still pass.
+
+This change was designed after inspecting the challenge question.
+Its result is a development-set improvement, not held-out generalisation.
+Five challenge cases remain unresolved. No live model was evaluated.

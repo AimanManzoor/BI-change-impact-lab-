@@ -36,7 +36,17 @@ def intent(question):
     indirect = bool(re.search(r"\bindirect(?:ly)?\b", text))
     if direct and indirect:
         return "clarification_required", None
-    if not re.search(r"\b(impact|impacts|affect|affected|depend|depends|downstream|review)\b", text):
+    dependency_intent = re.search(
+        r"\b(impact|impacts|affect|affected|depend|depends|downstream|review)\b",
+        text,
+    )
+    reliance_intent = re.search(
+        r"\bwhich\s+(?:(?:direct|indirect)\s+)?views?\s+"
+        r"(?:are\s+)?(?:rely|relies|relying)\s+on\s+"
+        + re.escape(names[0]) + r"(?!\w)",
+        text,
+    )
+    if not dependency_intent and not reliance_intent:
         return "clarification_required", None
     return "allowed", {"tool": "trace_recovered_impacts", "object": names[0],
                        "scope": "direct" if direct else "indirect" if indirect else "all"}

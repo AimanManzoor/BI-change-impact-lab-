@@ -353,7 +353,7 @@ The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
 This lets other programs reliably parse its output.
 
 Three additional regression tests cover all five objects, invalid selections,
-and CLI behavior. The complete suite now contains 94 tests.
+and CLI behavior. The complete suite now contains 97 tests.
 The existing 20 offline GraphRAG reference cases remain separate checks.
 The Streamlit interface now includes a separate bundled REA demo.
 
@@ -419,8 +419,8 @@ permissions, failure statuses, CLI setup, source handling and evaluation limits.
 ## Planner evaluation dataset v1
 
 A versioned set of **22 manually specified questions** now evaluates the complete
-offline planner workflow. **16 regression cases pass**. **Six challenge cases
-currently fail**: paraphrases, benign assurances, hypothetical rename analysis,
+offline planner workflow. **16 regression cases pass**. **Five challenge cases
+currently fail**: benign assurances, hypothetical rename analysis,
 compound explanations, row-count requests, and upstream-direction requests reveal
 limits in the keyword baseline. These are development results, not a held-out
 model benchmark or a general language-understanding score.
@@ -436,7 +436,7 @@ measurement command returns success for completed measurements even when cases
 mismatch; read its failed count. Invalid references or infrastructure errors still
 fail. CI gates the supported regression cases and separately measures challenges.
 
-Local validation: **94 tests passed**, all **20 existing GraphRAG reference cases
+Initial evaluation milestone: **94 tests passed**, all **20 existing GraphRAG reference cases
 passed**, the planner regression suite matched **16/16**, and the challenge suite
 matched **0/6**. No planner logic, live provider call, or model-quality benchmark
 was introduced in this milestone. The existing live planner shares the same
@@ -444,3 +444,22 @@ pre-model intent gate and cannot fix questions rejected before a model call.
 
 See [planner evaluation methodology](docs/planner_evaluation.md). The next step is
 to address a measured failure class and check that supported behavior is preserved.
+
+
+## Reliance-question refinement
+
+The offline planner now recognises constrained questions such as
+"Which views rely on orders?", "Which direct views rely on orders?",
+and "Which views are relying on orders?".
+
+Recognition requires a view-oriented question naming one supported
+dependency object. A bare use of "rely" does not permit a tool call.
+Existing ambiguity and action checks still run first.
+
+Local validation: 97 tests passed, all 16 supported planner cases passed,
+and all 20 GraphRAG reference cases passed. On the unchanged development
+dataset, challenge agreement improved from 0/6 to 1/6. Five cases remain
+unresolved.
+
+This is a targeted rule refinement, not a held-out model evaluation or
+evidence of general language understanding. No model call is required.
