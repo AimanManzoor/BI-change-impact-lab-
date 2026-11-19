@@ -145,3 +145,8 @@ if education_key is not None and education_stored is not None and education_stor
         st.dataframe(education['relationships'], hide_index=True, width='stretch')
     st.download_button('Download cross-file validation report', json.dumps(education, indent=2),
                        file_name=f'education_impact_{education_object}.json', mime='application/json')
+
+
+# Bundled REA schema demo
+from src.rea_demo import render_rea_demo
+render_rea_demo()

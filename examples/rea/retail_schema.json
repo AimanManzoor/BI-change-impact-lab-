@@ -1,0 +1,31 @@
+{
+  "demo_kind": "synthetic_schema_projection",
+  "data": {
+    "schema": {
+      "tables": [
+        {
+          "name": "customers",
+          "sql": "CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, region TEXT)"
+        },
+        {
+          "name": "orders",
+          "sql": "CREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER, amount DECIMAL(12,2))"
+        }
+      ],
+      "views": [
+        {
+          "name": "customer_directory",
+          "sql": "CREATE VIEW customer_directory AS\nSELECT customer_id, region FROM customers"
+        },
+        {
+          "name": "order_summary",
+          "sql": "CREATE VIEW order_summary AS\nSELECT customer_id, SUM(amount) AS total_amount FROM orders GROUP BY customer_id"
+        },
+        {
+          "name": "regional_sales",
+          "sql": "CREATE VIEW regional_sales AS\nSELECT c.region, SUM(s.total_amount) AS total_amount\nFROM order_summary s JOIN customers c ON s.customer_id = c.customer_id\nGROUP BY c.region"
+        }
+      ]
+    }
+  }
+}

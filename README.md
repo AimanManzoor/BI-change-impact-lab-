@@ -316,7 +316,7 @@ evidence envelope; they do not invoke REA, Node.js, or a model.
 This is fixture-scoped integration validation, not support for arbitrary
 databases, column-level lineage, DAX/TMDL analysis, or confirmed breaking
 changes. REA inspection and graph extraction are separate stages.
-Human review remains required. The hosted dashboard is unchanged.
+Human review remains required. See the bundled Streamlit demo below.
 
 Generated databases and inspection reports remain local under the ignored
 reports/generated/ directory.
@@ -353,6 +353,37 @@ The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
 This lets other programs reliably parse its output.
 
 Three additional regression tests cover all five objects, invalid selections,
-and CLI behavior. The complete suite now contains 69 tests.
+and CLI behavior. The complete suite now contains 75 tests.
 The existing 20 offline GraphRAG reference cases remain separate checks.
-The Streamlit interface is unchanged.
+The Streamlit interface now includes a separate bundled REA demo.
+
+## Explore recovered schema evidence in Streamlit
+
+Open the application, expand **REA: explore a recovered database schema**,
+and enable **Explore the bundled REA example**.
+
+Select a retail table or view to see:
+- Direct and indirect downstream consumer counts.
+- Reference-verified dependency paths.
+- Recovered SQL with matching line references.
+- A downloadable report for the current selection.
+
+Try `customers`: two direct consumers, customer_directory and regional_sales.
+Try `regional_sales`: no downstream consumers in this fixture.
+
+The bundled examples/rea/retail_schema.json contains only synthetic object
+names and SQL definitions projected from a local REA inspection. Original
+machine paths, database files, row data, and the full inspection envelope
+are not bundled. This projection is not a signed REA attestation.
+
+The browser does not run REA, require Node.js, connect to a database,
+accept uploads, or call a model. Python reuses src/rea_check.py to verify
+the stored schema against the fixed retail reference. Results recompute
+on selection; failed verification displays no REA report or download.
+
+The six new interface tests bring the suite to 75 tests. They cover the
+default interface, evidence display, selection-specific downloads, leaf
+objects, missing/invalid evidence, and failed rechecks.
+
+This remains a synthetic demonstration of potential dependency impact,
+not arbitrary-database support or proof of runtime breakage.
