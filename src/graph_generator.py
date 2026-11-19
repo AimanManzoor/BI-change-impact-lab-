@@ -23,11 +23,13 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 class AnthropicGenerator:
-    def __init__(self, *, model, api_key, transport=None):
+    def __init__(self, *, model, api_key, transport=None,
+                 system=SYSTEM, validate=parse_claims):
         if (not isinstance(model, str) or not model.strip() or len(model) > 128 or
                 not isinstance(api_key, str) or not api_key.strip()):
             raise ValueError('Specify an available model ID and API key for live mode.')
         self.model, self._key, self._transport = model, api_key.strip(), transport
+        self._system, self._validate = system, validate
         self.metadata = {'provider': 'anthropic', 'model_requested': model,
                          'request_attempts': 0, 'usage': {}}
 
@@ -35,7 +37,7 @@ class AnthropicGenerator:
         if self.metadata['request_attempts']:
             raise ValueError('This generator permits one provider request; no retry.')
         payload = {'model': self.model, 'max_tokens': 512, 'stream': False,
-                   'system': SYSTEM,
+                   'system': self._system,
                    'messages': [{'role': 'user', 'content': json.dumps(context)}]}
         request = Request(API_URL, data=json.dumps(payload).encode('utf-8'), method='POST',
                           headers={'Content-Type': 'application/json',
@@ -56,7 +58,7 @@ class AnthropicGenerator:
                     not isinstance(b.get('text'), str) for b in content)):
             raise ValueError('Expected text-only provider response.')
         text = ''.join(b['text'] for b in content)
-        parse_claims(text)  # Enforce answer bytes and duplicate-key rejection.
+        self._validate(text)  # Enforce the caller's bounded structured-output contract.
         usage = message.get('usage', {})
         if isinstance(usage, dict):
             self.metadata['usage'] = {k: usage[k] for k in ('input_tokens', 'output_tokens')

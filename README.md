@@ -353,7 +353,7 @@ The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
 This lets other programs reliably parse its output.
 
 Three additional regression tests cover all five objects, invalid selections,
-and CLI behavior. The complete suite now contains 75 tests.
+and CLI behavior. The complete suite now contains 86 tests.
 The existing 20 offline GraphRAG reference cases remain separate checks.
 The Streamlit interface now includes a separate bundled REA demo.
 
@@ -387,3 +387,30 @@ objects, missing/invalid evidence, and failed rechecks.
 
 This remains a synthetic demonstration of potential dependency impact,
 not arbitrary-database support or proof of runtime breakage.
+
+
+## Bounded change-review planning
+
+The Streamlit app now includes **BI Change Review Agent — offline planning
+baseline**. Ask a short question about one retail object, such as
+"Which indirect views depend on orders?", then click **Plan and verify review**.
+The rule-based planner proposes an object/scope; Python checks the plan and
+permits one reference-verified evidence-tool attempt. Completed receipts include
+SQL evidence and can be downloaded. Changing the question or source/reference
+fingerprint hides the previous result.
+
+The browser makes zero model calls. An optional local `--live` CLI uses the
+shared Claude adapter for one bounded model-planning attempt. The model can
+propose only the permitted tool/object/scope and cannot choose files, execute
+SQL, modify data or supply final factual claims. Live model verification is
+pending; the provider path was tested with a simulated response.
+
+```bash
+.venv/bin/python -m src.review_agent --question "Which indirect views depend on orders?"
+```
+
+Local validation: **86 tests passed**, including 11 added methods and 12 known
+reference questions; all **20 existing GraphRAG reference cases** also passed.
+The narrow intent gate is a conservative keyword baseline, not general language
+understanding. See [change-review methodology](docs/change_review_agent.md) for
+permissions, failure statuses, CLI setup, source handling and evaluation limits.

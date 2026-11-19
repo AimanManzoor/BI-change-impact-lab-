@@ -150,3 +150,8 @@ if education_key is not None and education_stored is not None and education_stor
 # Bundled REA schema demo
 from src.rea_demo import render_rea_demo
 render_rea_demo()
+
+
+# Guarded change-review planning
+from src.review_ui import render_review
+render_review()
