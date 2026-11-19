@@ -324,3 +324,35 @@ reports/generated/ directory.
 External tools:
 - REA: https://github.com/morluto/rea
 - Project owner's REA fork: https://github.com/AimanManzoor/rea
+
+## REA impact selection
+
+The REA checker supports selecting any object in the fixed retail fixture:
+
+- `orders`
+- `customers`
+- `order_summary`
+- `regional_sales`
+- `customer_directory`
+
+Example, after creating the REA evidence file using the instructions above:
+
+```bash
+.venv/bin/python -m src.rea_check --evidence reports/generated/rea_schema.json --object customers
+```
+
+The default remains `orders`. Reports include direct and indirect consumer
+counts and source-backed paths. Selecting a leaf view returns an empty
+impact list; an unknown or incorrectly capitalized name is rejected.
+
+All selections are checked against examples/expected_impacts.json.
+This remains a synthetic, fixture-scoped experiment rather than arbitrary
+database support or proof that a downstream report will break.
+
+The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
+This lets other programs reliably parse its output.
+
+Three additional regression tests cover all five objects, invalid selections,
+and CLI behavior. The complete suite now contains 69 tests.
+The existing 20 offline GraphRAG reference cases remain separate checks.
+The Streamlit interface is unchanged.

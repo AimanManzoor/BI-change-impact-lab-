@@ -1,11 +1,13 @@
 """Verify REA-recovered SQL against our synthetic retail reference."""
 import argparse
+import sys
+from contextlib import redirect_stdout
 import hashlib
 import json
 import tempfile
 from pathlib import Path
 
-from src.impact import downstream, verify_fixture
+from src.impact import ROOT, downstream, verify_fixture
 
 EXPECTED = {
     "tables": {"customers", "orders"},
@@ -64,8 +66,12 @@ def recover_sql(evidence):
     return "\n\n".join(statements) + "\n"
 
 
-def check_evidence(path):
+def check_evidence(path, object_name="orders"):
     from graphify.extract import extract
+
+    allowed = EXPECTED["tables"] | EXPECTED["views"]
+    if not isinstance(object_name, str) or object_name not in allowed:
+        raise ValueError("Object must be one of: " + ", ".join(sorted(allowed)))
 
     raw = Path(path).read_bytes()
     sql = recover_sql(json.loads(raw))
@@ -89,13 +95,12 @@ def check_evidence(path):
         ):
             raise ValueError("Expected four extracted dependencies")
 
-        impacts = downstream(result, "orders")
-        observed = [
-            (item["object"], item["depth"]) for item in impacts
-        ]
-        if observed != [
-            ("order_summary", 1), ("regional_sales", 2)
-        ]:
+        impacts = downstream(result, object_name)
+        observed = {item["object"]: item["depth"] for item in impacts}
+        references = json.loads(
+            (ROOT / "examples/expected_impacts.json").read_text()
+        )
+        if observed != references[object_name]:
             raise ValueError("Downstream impacts differ from reference")
 
         for item in impacts:
@@ -112,7 +117,9 @@ def check_evidence(path):
         ).hexdigest(),
         "verified_objects": 5,
         "verified_dependencies": 4,
-        "changed_object": "orders",
+        "changed_object": object_name,
+        "direct_count": sum(item["depth"] == 1 for item in impacts),
+        "indirect_count": sum(item["depth"] > 1 for item in impacts),
         "potentially_affected": impacts,
         "human_review_required": True,
         "model_calls": 0,
@@ -122,10 +129,12 @@ def check_evidence(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--object", default="orders")
     args = parser.parse_args()
 
     try:
-        report = check_evidence(args.evidence)
+        with redirect_stdout(sys.stderr):
+            report = check_evidence(args.evidence, object_name=args.object)
     except (ValueError, OSError) as error:
         parser.exit(1, f"Stopped: {error}\n")
 
