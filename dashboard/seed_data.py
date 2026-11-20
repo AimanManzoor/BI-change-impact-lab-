@@ -33,8 +33,19 @@ orders = [
 ]
 
 # Ensure the database exists
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 if not DB_PATH.is_file():
-    raise FileNotFoundError(f"Database not found: {DB_PATH}")
+
+    schema_path = (
+        Path(__file__).resolve().parents[1]
+        / "examples/retail.sql"
+    )
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.executescript(schema_path.read_text())
+
+    print("Retail database initialized successfully.")
 
 # Insert synthetic data
 with sqlite3.connect(DB_PATH) as conn:
