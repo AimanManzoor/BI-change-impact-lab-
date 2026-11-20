@@ -4,6 +4,33 @@
 
 **[Launch interactive app →](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** — explore the bundled SQL dependencies in your browser.
 
+## Interactive Retail Intelligence Dashboard
+
+An interactive SQL-powered dashboard built with FastAPI,
+SQLite, HTML, CSS, JavaScript and Plotly.js.
+
+### Key Features
+
+- Dynamic KPI cards
+- Regional revenue analysis
+- Interactive cross-filtering
+- Revenue distribution charts
+- Customer performance analysis
+- 5,000 synthetic retail transactions
+- Read-only SQL connectivity
+
+### Run Locally
+
+Start the FastAPI server:
+
+\`\`\`bash
+python -m uvicorn dashboard.api:app --port 8000
+\`\`\`
+
+Open: http://127.0.0.1:8000/dashboard
+
+All data is synthetic.
+
 A learning project using Graphify to trace SQL dependencies, retrieve source-backed graph context, and check structured dependency claims. The dashboard offers a template preview; an optional local GraphRAG CLI adds model generation behind the same evidence boundary.
 
 ## Try the interactive app
@@ -463,3 +490,5 @@ unresolved.
 
 This is a targeted rule refinement, not a held-out model evaluation or
 evidence of general language understanding. No model call is required.
+
+

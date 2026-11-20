@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Retail Intelligence Dashboard</title>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+        }
+
+        .filters {
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            background: #1e293b;
+            color: white;
+            border: 1px solid #475569;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(210px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        .card h2 {
+            font-size: 30px;
+            margin-bottom: 0;
+            color: #38bdf8;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(min(420px, 100%), 1fr)
+            );
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .chart {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 400px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        #status {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Retail Intelligence Dashboard</h1>
+
+    <p class="subtitle">
+        BI Change Impact Lab | Synthetic Retail Analytics
+    </p>
+
+    <div class="filters">
+        <label for="region">Select Region:</label>
+
+        <select id="region">
+            <option value="All">All Regions</option>
+        </select>
+
+        <button id="refresh">Refresh Data</button>
+        <button id="reset">Reset Filters</button>
+    </div>
+
+    <p id="status">Loading data...</p>
+
+    <div class="kpi-grid">
+
+        <div class="card">
+            <h3>Total Customers</h3>
+            <h2 id="customers">—</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Orders</h3>
+            <h2 id="orders">—</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Revenue</h3>
+            <h2 id="sales">—</h2>
+        </div>
+
+        <div class="card">
+            <h3>Average Order Value</h3>
+            <h2 id="average">—</h2>
+        </div>
+
+    </div>
+
+    <div class="charts">
+        <div class="chart" id="regionalChart"></div>
+        <div class="chart" id="donutChart"></div>
+        <div class="chart full-width" id="customerChart"></div>
+    </div>
+
+    <script>
+
+        const currency = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD"
+        });
+
+        const layout = {
+            paper_bgcolor: "#1e293b",
+            plot_bgcolor: "#1e293b",
+            font: {
+                color: "#f8fafc",
+                family: "Arial"
+            },
+            margin: {t: 60, b: 60, l: 90, r: 30}
+        };
+
+        const config = {
+            responsive: true,
+            displaylogo: false
+        };
+
+        async function fetchData(endpoint) {
+            const response = await fetch(endpoint);
+
+            if (!response.ok) {
+                throw new Error("API request failed");
+            }
+
+            return response.json();
+        }
+
+        async function loadRegions() {
+
+            const regions = await fetchData("/api/regions");
+            const dropdown = document.getElementById("region");
+
+            regions.forEach(region => {
+                const option = document.createElement("option");
+
+                option.value = region;
+                option.textContent = region;
+
+                dropdown.appendChild(option);
+            });
+        }
+
+        let requestId = 0;
+
+        async function loadDashboard() {
+
+            const currentRequest = ++requestId;
+
+            const region = document.getElementById("region").value;
+
+            const filter = `?region=${encodeURIComponent(region)}`;
+
+            document.getElementById("status").textContent =
+                "Loading data...";
+
+            try {
+
+                const [kpis, regionalSales, customers] =
+                    await Promise.all([
+                        fetchData("/api/kpis" + filter),
+                        fetchData("/api/regional-sales"),
+                        fetchData("/api/customer-sales" + filter)
+                    ]);
+
+                if (currentRequest !== requestId) return;
+
+                // Update KPI cards
+
+                document.getElementById("customers").textContent =
+                    kpis.total_customers.toLocaleString();
+
+                document.getElementById("orders").textContent =
+                    kpis.total_orders.toLocaleString();
+
+                document.getElementById("sales").textContent =
+                    currency.format(kpis.total_sales);
+
+                document.getElementById("average").textContent =
+                    kpis.average_order_value === null
+                    ? "N/A"
+                    : currency.format(kpis.average_order_value);
+
+                // Regional revenue bar chart
+
+                const regionalChart =
+                    document.getElementById("regionalChart");
+
+                await Plotly.react(regionalChart, [{
+                    x: regionalSales.map(row => row.region),
+                    y: regionalSales.map(row => row.total_sales),
+                    type: "bar",
+                    marker: {
+                        color: regionalSales.map(row =>
+                            region === "All" || row.region === region
+                            ? "#38bdf8"
+                            : "#475569"
+                        )
+                    },
+                    hovertemplate: "%{x}: $%{y:,.2f}<extra></extra>"
+                }], {
+                    ...layout,
+                    title: "Regional Revenue",
+                    yaxis: {tickprefix: "$", gridcolor: "#334155"}
+                }, config);
+
+                // Clicking a bar filters the dashboard
+
+                regionalChart.removeAllListeners("plotly_click");
+
+                regionalChart.on("plotly_click", event => {
+
+                    document.getElementById("region").value =
+                        event.points[0].x;
+
+                    loadDashboard();
+                });
+
+                // Revenue distribution donut chart
+
+                const donutChart =
+                    document.getElementById("donutChart");
+
+                await Plotly.react(donutChart, [{
+                    labels: regionalSales.map(row => row.region),
+                    values: regionalSales.map(row => row.total_sales),
+                    type: "pie",
+                    hole: 0.60,
+                    textinfo: "label+percent",
+                    pull: regionalSales.map(row =>
+                        row.region === region ? 0.08 : 0
+                    ),
+                    marker: {
+                        colors: [
+                            "#38bdf8",
+                            "#22c55e",
+                            "#a78bfa",
+                            "#f59e0b",
+                            "#f43f5e"
+                        ]
+                    }
+                }], {
+                    ...layout,
+                    title: "Overall Revenue Distribution"
+                }, config);
+
+                donutChart.removeAllListeners("plotly_click");
+
+                donutChart.on("plotly_click", event => {
+
+                    document.getElementById("region").value =
+                        event.points[0].label;
+
+                    loadDashboard();
+                });
+
+                // Top 10 customers
+
+                const rankedCustomers = [...customers].reverse();
+
+                await Plotly.react("customerChart", [{
+                    x: rankedCustomers.map(row => row.total_sales),
+                    y: rankedCustomers.map(row =>
+                        `Customer ${row.customer_id}`
+                    ),
+                    type: "bar",
+                    orientation: "h",
+                    marker: {
+                        color: "#22c55e"
+                    },
+                    hovertemplate: "%{y}: $%{x:,.2f}<extra></extra>"
+                }], {
+                    ...layout,
+                    title: "Top 10 Customers by Revenue",
+                    xaxis: {tickprefix: "$", gridcolor: "#334155"},
+                    yaxis: {type: "category"},
+                    margin: {t: 60, b: 50, l: 130, r: 30}
+                }, config);
+
+                document.getElementById("status").textContent =
+                    `Showing ${region === "All" ? "all regions" : region}
+                     | Updated: ${new Date().toLocaleTimeString()}`;
+
+            } catch (error) {
+
+                if (currentRequest !== requestId) return;
+
+                document.getElementById("status").textContent =
+                    "Unable to load dashboard: " + error.message;
+            }
+        }
+
+        document.getElementById("region")
+            .addEventListener("change", loadDashboard);
+
+        document.getElementById("refresh")
+            .addEventListener("click", loadDashboard);
+
+        document.getElementById("reset")
+            .addEventListener("click", () => {
+
+                document.getElementById("region").value = "All";
+
+                loadDashboard();
+            });
+
+        async function initialize() {
+            try {
+                await loadRegions();
+                await loadDashboard();
+            } catch (error) {
+                document.getElementById("status").textContent =
+                    error.message;
+            }
+        }
+
+        initialize();
+
+    </script>
+
+</body>
+</html>
