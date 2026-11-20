@@ -1,54 +1,36 @@
 # BI Change Impact Lab
 
-[![Launch interactive app](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)
+An end-to-end BI engineering project combining SQL dependency analysis, GraphRAG, change-impact evaluation, and interactive retail analytics. The change-impact explorer retrieves source-backed graph context and checks structured dependency claims; an optional local GraphRAG CLI adds model generation behind the same evidence boundary.
 
-**[Launch interactive app →](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** — explore the bundled SQL dependencies in your browser.
+## Live Demos
 
-## Interactive Retail Intelligence Dashboard
+Explore both applications directly in your browser — no local installation required.
 
-An interactive SQL-powered dashboard built with FastAPI,
-SQLite, HTML, CSS, JavaScript and Plotly.js.
+### 1. SQL Change Impact Analyzer (Streamlit)
 
-### Key Features
+[**Launch Streamlit App**](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)
 
-- Dynamic KPI cards
-- Regional revenue analysis
-- Interactive cross-filtering
-- Revenue distribution charts
-- Customer performance analysis
-- 5,000 synthetic retail transactions
-- Read-only SQL connectivity
+- SQL dependency and lineage analysis
+- Downstream change-impact investigation
+- Source-backed evidence retrieval
+- Downloadable impact reports
 
-### Run Locally
+### 2. Retail Intelligence Dashboard (HTML)
 
-Start the FastAPI server:
+[**Launch Interactive HTML Dashboard**](https://bi-change-impact-lab.onrender.com/dashboard)
 
-\`\`\`bash
-python -m uvicorn dashboard.api:app --port 8000
-\`\`\`
+- Dynamic SQL-driven KPI cards
+- Regional revenue analysis and interactive cross-filtering
+- Revenue distribution charts and customer performance analysis
+- FastAPI, HTML, CSS, JavaScript, Plotly.js, and read-only SQLite connectivity
 
-Open: http://127.0.0.1:8000/dashboard
+**Dataset:** 500 synthetic customers and 5,000 synthetic orders across five regions. All demo data is synthetic.
 
-All data is synthetic.
+**Note:** Free hosting services may take a moment to wake up.
 
-A learning project using Graphify to trace SQL dependencies, retrieve source-backed graph context, and check structured dependency claims. The dashboard offers a template preview; an optional local GraphRAG CLI adds model generation behind the same evidence boundary.
+## Run Locally
 
-## Try the interactive app
-
-Open **[the hosted Streamlit app](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** to explore the example without a local installation.
-Choose an object, inspect its downstream views and source evidence, and download the impact report.
-
-## Live Interactive Dashboard
-
-[🚀 Launch Retail Intelligence Dashboard](https://bi-change-impact-lab.onrender.com/dashboard)
-
-Explore interactive SQL-driven KPIs, regional revenue analysis,
-customer performance, and dynamic cross-filtering.
-
-**Note:** The dashboard uses entirely synthetic retail data.
-The free hosting instance may take a moment to wake up.
-
-### Run a local copy instead
+### SQL Change Impact Analyzer (Streamlit)
 
 Requires Git, Python 3.12, and an internet connection to install dependencies.
 The bundled synthetic example needs no dataset download, API key, or database server.
@@ -80,6 +62,20 @@ This address works on the computer running the app; it is not a public demo link
 Already cloned? Enter your existing checkout, run `git pull --ff-only`, reinstall
 requirements, and launch Streamlit with the command above.
 
+### Retail Intelligence Dashboard (FastAPI)
+
+From the cloned repository directory, with your Python 3.12 virtual environment activated:
+
+```bash
+python -m pip install -r dashboard/requirements.txt
+python dashboard/seed_data.py
+python -m uvicorn dashboard.api:app --port 8000
+```
+
+Open [Local Dashboard](http://127.0.0.1:8000/dashboard). Keep the server running while exploring; press **Control+C** to stop it.
+
+The seed script initializes the synthetic SQLite database if needed. An internet connection is required to load Plotly.js.
+
 ### Your first exploration
 
 | Select | What you should see |
@@ -94,14 +90,9 @@ not confirmed breaking changes. The app currently supports only this bundled exa
 
 ### Sharing
 
-Share this repository URL: https://github.com/AimanManzoor/BI-change-impact-lab-
+Share this repository: https://github.com/AimanManzoor/BI-change-impact-lab-
 
-Share the app URL for browser access: https://5h6ugidjyitkpvyqj4mjss.streamlit.app/
-
-The README launch button opens the Streamlit deployment. GitHub hosts the source;
-Streamlit runs the application. Visitors can also follow the local setup instructions.
-The deployment URL was supplied by the project owner; public access and browser
-interactions should be checked in a signed-out or private browser window.
+Use the [SQL Change Impact Analyzer](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/) or [Retail Intelligence Dashboard](https://bi-change-impact-lab.onrender.com/dashboard) for browser access. GitHub hosts the source; Streamlit and Render host the applications. Visitors can also reproduce them locally.
 
 ## Milestone 1: verified SQL dependency baseline
 
