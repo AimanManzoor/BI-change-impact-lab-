@@ -2,83 +2,65 @@ import sqlite3
 import random
 from pathlib import Path
 
-# Database location
-DB_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "reports/generated/retail_demo.sqlite"
-)
+ROOT = Path(__file__).resolve().parents[1]
 
-# Reproducible synthetic data
+DB_PATH = ROOT / "reports/generated/retail_demo.sqlite"
+SCHEMA_PATH = ROOT / "examples/retail.sql"
+
+# Create the database directory
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+# Initialize reproducible synthetic data
 random.seed(42)
 
 REGIONS = ["North", "South", "East", "West", "Central"]
 
-NUM_CUSTOMERS = 500
-NUM_ORDERS = 5000
-
-# Generate synthetic customers
 customers = [
-    (customer_id, random.choice(REGIONS))
-    for customer_id in range(1, NUM_CUSTOMERS + 1)
+    (i, random.choice(REGIONS))
+    for i in range(1, 501)
 ]
 
-# Generate synthetic orders
 orders = [
     (
-        order_id,
-        random.randint(1, NUM_CUSTOMERS),
+        i,
+        random.randint(1, 500),
         round(random.uniform(10, 2500), 2)
     )
-    for order_id in range(1, NUM_ORDERS + 1)
+    for i in range(1, 5001)
 ]
 
-# Ensure the database exists
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-if not DB_PATH.is_file():
-
-    schema_path = (
-        Path(__file__).resolve().parents[1]
-        / "examples/retail.sql"
-    )
-
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.executescript(schema_path.read_text())
-
-    print("Retail database initialized successfully.")
-
-# Insert synthetic data
 with sqlite3.connect(DB_PATH) as conn:
 
-    conn.executemany(
-        """
+    # Initialize tables and views if the database is new
+    table_exists = conn.execute("""
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'table'
+        AND name = 'customers'
+    """).fetchone()
+
+    if not table_exists:
+        conn.executescript(SCHEMA_PATH.read_text())
+        print("Database schema initialized.")
+
+    conn.executemany("""
         INSERT OR IGNORE INTO customers
         (customer_id, region)
         VALUES (?, ?)
-        """,
-        customers
-    )
+    """, customers)
 
-    conn.executemany(
-        """
+    conn.executemany("""
         INSERT OR IGNORE INTO orders
         (order_id, customer_id, amount)
         VALUES (?, ?, ?)
-        """,
-        orders
-    )
+    """, orders)
 
     conn.commit()
 
-    customer_count = conn.execute(
-        "SELECT COUNT(*) FROM customers"
-    ).fetchone()[0]
-
-    order_count = conn.execute(
-        "SELECT COUNT(*) FROM orders"
-    ).fetchone()[0]
-
     print("Synthetic retail data generated successfully.")
-    print(f"Total customers: {customer_count}")
-    print(f"Total orders: {order_count}")
-    print(f"Database: {DB_PATH}")
+
+    print("Total customers:",
+          conn.execute("SELECT COUNT(*) FROM customers").fetchone()[0])
+
+    print("Total orders:",
+          conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0])
