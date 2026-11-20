@@ -38,6 +38,16 @@ A learning project using Graphify to trace SQL dependencies, retrieve source-bac
 Open **[the hosted Streamlit app](https://5h6ugidjyitkpvyqj4mjss.streamlit.app/)** to explore the example without a local installation.
 Choose an object, inspect its downstream views and source evidence, and download the impact report.
 
+## Live Interactive Dashboard
+
+[🚀 Launch Retail Intelligence Dashboard](https://bi-change-impact-lab.onrender.com/dashboard)
+
+Explore interactive SQL-driven KPIs, regional revenue analysis,
+customer performance, and dynamic cross-filtering.
+
+**Note:** The dashboard uses entirely synthetic retail data.
+The free hosting instance may take a moment to wake up.
+
 ### Run a local copy instead
 
 Requires Git, Python 3.12, and an internet connection to install dependencies.
