@@ -70,7 +70,7 @@ mismatches remain visible in JSON, but do not fail the command. Invalid referenc
 unexpected runner failures, and planner/evidence operational errors still exit 2.
 Therefore a zero exit in measurement mode does not mean all cases passed.
 
-Without --measure, the challenge command currently exits 1 with five mismatches:
+Without --measure, the challenge command currently exits 1 with three mismatches:
 
 ```bash
 .venv/bin/python -m evals.evaluate_planner --suite challenge
@@ -121,3 +121,18 @@ regression suite contains 97 tests; all 20 GraphRAG cases still pass.
 This change was designed after inspecting the challenge question.
 Its result is a development-set improvement, not held-out generalisation.
 Five challenge cases remain unresolved. No live model was evaluated.
+
+
+## Unsupported-analysis guard
+
+The change-review planner now asks for clarification on requests for upstream
+dependencies or explicit row counts. Its tool supports downstream dependency
+impact only, so these requests make zero model calls and zero analysis-tool calls.
+Explicit write requests remain rejected by the earlier action guard.
+
+Local validation: 100 regression tests passed, all 16 supported planner reference
+cases passed, and all 20 GraphRAG cases passed. On the unchanged development
+reference dataset, challenge agreement improved from 1/6 to 3/6. The remaining
+three cases concern benign assurances, hypothetical renames and compound
+explanations. This is a targeted development-set improvement, not a held-out
+language benchmark. No model call is required.

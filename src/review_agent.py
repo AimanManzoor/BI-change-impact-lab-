@@ -36,6 +36,14 @@ def intent(question):
     indirect = bool(re.search(r"\bindirect(?:ly)?\b", text))
     if direct and indirect:
         return "clarification_required", None
+    unsupported_question = re.search(
+        r"\bupstream\b|\b(?:number|count)\s+of\s+rows\b"
+        r"|\brow\s+counts?\b|\bhow\s+many\s+rows\b"
+        r"|\bcount\s+(?:the\s+)?rows\b",
+        text,
+    )
+    if unsupported_question:
+        return "clarification_required", None
     dependency_intent = re.search(
         r"\b(impact|impacts|affect|affected|depend|depends|downstream|review)\b",
         text,
