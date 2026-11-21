@@ -381,7 +381,7 @@ The CLI reserves stdout for JSON and sends extraction diagnostics to stderr.
 This lets other programs reliably parse its output.
 
 Three additional regression tests cover all five objects, invalid selections,
-and CLI behavior. The complete suite now contains 100 tests.
+and CLI behavior. The complete suite now contains 103 tests.
 The existing 20 offline GraphRAG reference cases remain separate checks.
 The Streamlit interface now includes a separate bundled REA demo.
 
@@ -447,9 +447,8 @@ permissions, failure statuses, CLI setup, source handling and evaluation limits.
 ## Planner evaluation dataset v1
 
 A versioned set of **22 manually specified questions** now evaluates the complete
-offline planner workflow. **16 regression cases pass**. **Three challenge cases
-currently fail**: benign assurances, hypothetical rename analysis, and compound
-explanations reveal limits in the keyword baseline. These are development results, not a held-out
+offline planner workflow. **16 regression cases pass**. **Two challenge cases
+currently fail**: hypothetical rename analysis and compound explanations reveal limits in the keyword baseline. These are development results, not a held-out
 model benchmark or a general language-understanding score.
 
 ```bash
@@ -507,3 +506,19 @@ reference dataset, challenge agreement improved from 1/6 to 3/6. The remaining
 three cases concern benign assurances, hypothetical renames and compound
 explanations. This is a targeted development-set improvement, not a held-out
 language benchmark. No model call is required.
+
+
+## Read-only assurance refinement
+
+The planner accepts the trailing phrase "without changing it" as a read-only
+assurance, with optional final punctuation. The phrase is ignored only for the
+ambiguity check. The original full question still passes through the earlier
+action guard and the existing object, scope and unsupported-analysis checks.
+
+Other uses of "without", multiple-object requests, and write requests remain
+stopped. This is a narrow phrase rule rather than general negation handling.
+
+Local validation: 103 tests passed; all 16 supported planner cases and all 20
+GraphRAG cases passed. On the unchanged development dataset, challenge agreement
+improved from 3/6 to 4/6. Hypothetical renames and compound explanations remain
+unresolved. No live model was evaluated.

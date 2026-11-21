@@ -70,7 +70,7 @@ mismatches remain visible in JSON, but do not fail the command. Invalid referenc
 unexpected runner failures, and planner/evidence operational errors still exit 2.
 Therefore a zero exit in measurement mode does not mean all cases passed.
 
-Without --measure, the challenge command currently exits 1 with three mismatches:
+Without --measure, the challenge command currently exits 1 with two mismatches:
 
 ```bash
 .venv/bin/python -m evals.evaluate_planner --suite challenge
@@ -136,3 +136,19 @@ reference dataset, challenge agreement improved from 1/6 to 3/6. The remaining
 three cases concern benign assurances, hypothetical renames and compound
 explanations. This is a targeted development-set improvement, not a held-out
 language benchmark. No model call is required.
+
+
+## Read-only assurance refinement
+
+The planner accepts the trailing phrase "without changing it" as a read-only
+assurance, with optional final punctuation. The phrase is ignored only for the
+ambiguity check. The original full question still passes through the earlier
+action guard and the existing object, scope and unsupported-analysis checks.
+
+Other uses of "without", multiple-object requests, and write requests remain
+stopped. This is a narrow phrase rule rather than general negation handling.
+
+Local validation: 103 tests passed; all 16 supported planner cases and all 20
+GraphRAG cases passed. On the unchanged development dataset, challenge agreement
+improved from 3/6 to 4/6. Hypothetical renames and compound explanations remain
+unresolved. No live model was evaluated.

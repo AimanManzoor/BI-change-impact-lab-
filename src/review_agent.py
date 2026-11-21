@@ -27,7 +27,10 @@ def intent(question):
     text = question.lower()
     if re.search(r"\b(drop|delete|truncate|update|insert|execute|alter|create|rename|modify|write|run)\b", text):
         return "rejected", None
-    if re.search(r"\b(and|or|except|excluding|without|not)\b", text):
+    ambiguity_text = re.sub(
+        r"\bwithout\s+changing\s+it\s*[.!?]?\s*$", "", text
+    )
+    if re.search(r"\b(and|or|except|excluding|without|not)\b", ambiguity_text):
         return "clarification_required", None
     names = [name for name in OBJECTS if re.search(r"(?<!\w)" + name + r"(?!\w)", text)]
     if len(names) != 1:
