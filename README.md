@@ -522,3 +522,20 @@ Local validation: 103 tests passed; all 16 supported planner cases and all 20
 GraphRAG cases passed. On the unchanged development dataset, challenge agreement
 improved from 3/6 to 4/6. Hypothetical renames and compound explanations remain
 unresolved. No live model was evaluated.
+
+## Downstream explanation-request refinement
+
+The planner recognises the trailing phrase "and explain the downstream impact"
+for an otherwise supported single-object review. It preserves the selected
+object and direct/indirect scope.
+
+The original question still passes through action, ambiguity, object and
+unsupported-analysis checks. Write requests and multiple-object requests
+remain stopped before model or analysis-tool calls.
+
+This is a narrow rule refinement, not general language understanding.
+The offline workflow uses zero model calls and returns reference-verified
+potential dependency impacts, not proof of runtime breakage.
+
+Run the targeted checks:
+`python -m unittest tests.test_explanation_request -v`.

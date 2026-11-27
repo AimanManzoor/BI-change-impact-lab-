@@ -30,6 +30,13 @@ def intent(question):
     ambiguity_text = re.sub(
         r"\bwithout\s+changing\s+it\s*[.!?]?\s*$", "", text
     )
+    # Permit one trailing explanation request for the same downstream review.
+    # The original question still passes through all other checks.
+    ambiguity_text = re.sub(
+        r"\band\s+explain\s+the\s+downstream\s+impact\s*[.!?]?\s*$",
+        "",
+        ambiguity_text,
+    )
     if re.search(r"\b(and|or|except|excluding|without|not)\b", ambiguity_text):
         return "clarification_required", None
     names = [name for name in OBJECTS if re.search(r"(?<!\w)" + name + r"(?!\w)", text)]
